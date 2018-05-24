@@ -27,7 +27,9 @@ export default class TestUtils {
     }
 
     static getClient(): ExtendedClient {
-        return new ExtendedClient('http://localhost:3001/api/v1');
+        // const url = 'http://api-integration-tests.192.168.99.100.nip.io/api/v1'
+        const url = 'http://localhost:3001/api/v1';
+        return new ExtendedClient(url);
     }
 
     static async clearDatabase() {

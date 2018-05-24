@@ -280,11 +280,7 @@ describe('Duty API', () => {
             const duties = await api.ImportDefaultDuties({ courthouseId: assignment.courthouseId });
             expect(Array.isArray(duties)).toBeTruthy();
             expect(duties.length).toEqual(1);
-            assertImportedDuties(duties,assignment);
+            assertImportedDuties(duties, assignment);
         });
-
-
     })
-
-
 }) 

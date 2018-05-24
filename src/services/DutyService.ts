@@ -120,6 +120,7 @@ export class DutyService extends DatabaseService<Duty> {
     async importDefaults(request: DutyImportDefaultsRequest): Promise<Duty[]> {
         const { courthouseId, date } = request;
         const dateMoment = date ? moment(date) : moment();
+        console.log("DATE", date);
         // Setup transaction for creating all of the duties / sheriff duties
 
         const assignmentService = new AssignmentService();
@@ -150,15 +151,30 @@ export class DutyService extends DatabaseService<Duty> {
                 )
             );
         const recurrencesToCreate = await this.executeQuery<DutyRecurrence>(query.toString());
-        
+
+
+
         const createdDuties = await this.db.transaction(async client => {
             const service = new DutyService();
             service.dbClient = client;
 
+            // HACK: this is to fix the timezone offsets for the demo
+            // we should be storing timezone information in the time 
+            // and dealing with it in and out of the database
+            const pacificTimeZoneOffset = 7 * 60; // 7 hours * 60 minutes
+            const timeOffset = dateMoment.utcOffset() + pacificTimeZoneOffset;
+            console.log(`Time Offset ${timeOffset} minutes`);
+
             // For each of the recurrences, create the duty and sheriff Duties
             return await Promise.all(recurrencesToCreate.map(async (dr) => {
-                const startDateTime = dateMoment.startOf('day').add(moment.duration(dr.startTime)).toISOString();
-                const endDateTime = dateMoment.startOf('day').add(moment.duration(dr.endTime)).toISOString();
+                const startDateTime = dateMoment.startOf('day')
+                    .add(moment.duration(dr.startTime))
+                    .add(timeOffset, 'minutes')
+                    .toISOString();
+                const endDateTime = dateMoment.startOf('day')
+                    .add(moment.duration(dr.endTime))
+                    .add(timeOffset, 'minutes')
+                    .toISOString();
                 const sheriffDuties: SheriffDuty[] = [];
                 // Create a blank sheriffDuty for each sheriff required
                 for (let i = 0; i < dr.sheriffsRequired; ++i) {
