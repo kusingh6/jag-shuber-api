@@ -171,7 +171,7 @@ describe('Duty API', () => {
         });
     });
 
-    describe('import default duties', () => {
+    describe.only('import default duties', () => {
         const recurrenceToCreate: DutyRecurrence = {
             daysBitmap: 1 << moment().isoWeekday() - 1,
             startTime: "10:00:00",
@@ -205,6 +205,14 @@ describe('Duty API', () => {
             })
 
         }
+
+        beforeEach(async (done)=>{
+            await TestUtils.clearTable('sheriff_duty');
+            await TestUtils.clearTable('duty');
+            await TestUtils.clearTable('duty_recurrence');
+            await TestUtils.clearTable('assignment');
+            done();
+        })
 
         it('import defaults should create duties with correct details', async () => {
             const recurrences: DutyRecurrence[] = [

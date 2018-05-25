@@ -3,6 +3,7 @@ import db from '../../db/Database';
 import ExtendedClient from '../ExtendedClient';
 import { Courthouse, Courtroom, Assignment, Region } from '../models';
 import { Sheriff } from '../../models/Sheriff';
+import { ClientBase } from 'pg';
 
 expect.extend({
     toMatchShapeOf,
@@ -32,11 +33,17 @@ export default class TestUtils {
         return new ExtendedClient(url);
     }
 
+    static async clearTable(tableName:string, client?:ClientBase){
+        if(!client){
+            client = await db.getClient();
+        }
+        await client.query(`DELETE FROM ${tableName};`);
+    }
+
     static async clearDatabase() {
-        const client = await db.getClient();
         await db.transaction(async (client) => {
             await TestUtils.tablesToClear.forEach(async (table) => {
-                await client.query(`DELETE FROM ${table};`)
+                await TestUtils.clearTable(table,client);
             });
         })
     }

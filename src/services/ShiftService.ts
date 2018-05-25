@@ -43,11 +43,13 @@ export class ShiftService extends DatabaseService<Shift> {
         }
         if (startTime) {
             const startTimeMoment = moment(startTime).utc();
+            console.log("START",startTimeMoment.hours(),startTimeMoment.minutes());
             query.set('start_dtm',
                 this.squel.str(`DATE(start_dtm)+interval '${startTimeMoment.hours()} hours ${startTimeMoment.minutes()} minutes'`));
         }
         if (endTime) {
             const endTimeMoment = moment(endTime).utc();
+            console.log("END",endTimeMoment.hours(),endTimeMoment.minutes());
             query.set('end_dtm',
                 this.squel.str(`DATE(start_dtm)+interval '${endTimeMoment.hours()} hours ${endTimeMoment.minutes()} minutes'`));
         }
