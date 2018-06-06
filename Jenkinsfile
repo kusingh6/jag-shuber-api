@@ -2,9 +2,9 @@
 @Library('devops-library') _
 
 // Edit your app's name below
-def APP_NAME = 'Api'
+def APP_NAME = 'api'
 def PATHFINDER_URL = "192.168.64.2.nip.io"
-def PROJECT_PREFIX = "jag-shuber"
+def PROJECT_PREFIX = "shuber"
 // Edit your environment TAG names below
 def TAG_NAMES = [
   'dev', 
@@ -18,9 +18,9 @@ def APP_URLS = [
 ]
 
 // You shouldn't have to edit these if you're following the conventions
-def ARTIFACT_BUILD = APP_NAME+'-artifacts-build'
-def RUNTIME_BUILD = APP_NAME+'-runtime-build'
-def IMAGESTREAM_NAME = APP_NAME
+def ARTIFACT_BUILD = APP_NAME+'-builder-build'
+def RUNTIME_BUILD = PROJECT_PREFIX+APP_NAME
+def IMAGESTREAM_NAME = PROJECT_PREFIX+APP_NAME
 //def SLACK_DEV_CHANNEL="#sheriffscheduling_dev"
 //def SLACK_MAIN_CHANNEL="#sheriff_scheduling"
 
@@ -60,7 +60,8 @@ node{
           returnStdout: true).trim()
         echo ">> IMAGE_HASH: ${IMAGE_HASH}"
       }catch(error){
-        slackNotify(
+        echo "Error"
+        /*slackNotify(
           'Build Broken 🤕',
           "The latest ${APP_NAME} build seems to have broken\n'${error.message}'",
           'danger',
@@ -73,7 +74,7 @@ node{
               style:"danger",           
               url: "${currentBuild.absoluteUrl}/console"
             ]
-          ])
+          ])*/
         throw error
       }
     }
