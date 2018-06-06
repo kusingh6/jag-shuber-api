@@ -19,8 +19,8 @@ def APP_URLS = [
 
 // You shouldn't have to edit these if you're following the conventions
 def ARTIFACT_BUILD = APP_NAME+'-builder-build'
-def RUNTIME_BUILD = PROJECT_PREFIX+APP_NAME
-def IMAGESTREAM_NAME = PROJECT_PREFIX+APP_NAME
+def RUNTIME_BUILD = PROJECT_PREFIX+'-'+APP_NAME
+def IMAGESTREAM_NAME = PROJECT_PREFIX+'-'+APP_NAME
 //def SLACK_DEV_CHANNEL="#sheriffscheduling_dev"
 //def SLACK_MAIN_CHANNEL="#sheriff_scheduling"
 
