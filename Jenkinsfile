@@ -21,8 +21,8 @@ def APP_URLS = [
 def ARTIFACT_BUILD = APP_NAME+'-builder-build'
 def RUNTIME_BUILD = PROJECT_PREFIX+'-'+APP_NAME
 def IMAGESTREAM_NAME = PROJECT_PREFIX+'-'+APP_NAME
-//def SLACK_DEV_CHANNEL="#sheriffscheduling_dev"
-//def SLACK_MAIN_CHANNEL="#sheriff_scheduling"
+def SLACK_DEV_CHANNEL="kulpreet_test"
+def SLACK_MAIN_CHANNEL="kulpreet_test"
 
 def hasRepoChanged = false;
 node{
@@ -60,8 +60,8 @@ node{
           returnStdout: true).trim()
         echo ">> IMAGE_HASH: ${IMAGE_HASH}"
       }catch(error){
-        echo "Error"
-        /*slackNotify(
+        // echo "Error"
+        slackNotify(
           'Build Broken 🤕',
           "The latest ${APP_NAME} build seems to have broken\n'${error.message}'",
           'danger',
@@ -74,12 +74,12 @@ node{
               style:"danger",           
               url: "${currentBuild.absoluteUrl}/console"
             ]
-          ])*/
+          ])
         throw error
       }
     }
   }
-/*
+
   stage('Deploy ' + TAG_NAMES[0]) {
     def environment = TAG_NAMES[0]
     def url = APP_URLS[0]
@@ -150,4 +150,3 @@ node{
 //     currentBuild.result = 'SUCCESS'
 //   }
 // }
-*/
