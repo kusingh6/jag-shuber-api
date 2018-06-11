@@ -152,7 +152,7 @@ node{
         stage('Postgress Emphemeral Image'){
           node{
             steps{
-              sh "oc process -f "${WORKSPACE}/openshift/posgress-emphemeral.json" $params | oc create -f -"
+              sh "oc process -f "./openshift/posgress-emphemeral.json" $params | oc create -f -"
             }
           }
         }
@@ -163,7 +163,7 @@ node{
             }
             post{
               always{
-                sh "oc process -f "${WORKSPACE}/openshift/posgress-emphemeral.json" $params | oc delete -f -"
+                sh "oc process -f "./openshift/posgress-emphemeral.json" $params | oc delete -f -"
               }
             }
           }
