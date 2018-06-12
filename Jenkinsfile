@@ -114,8 +114,8 @@ node{
         //   openshift.withProject(TAG_NAMES[0]) {
         //     echo "Building Postgress and api deployment config: " + IMAGESTREAM_NAME
         //     def PSTGRESS_IMG = openshift.create(readFile('openshift/api-postgres-deploy.json')).object()
-          }
-        }
+        //   }
+        // }
         slackNotify(
             "New Version in ${environment} 🚀",
             "A new version of the ${APP_NAME} is now in ${environment}",
