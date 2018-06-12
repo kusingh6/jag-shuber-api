@@ -46,7 +46,6 @@ node{
 //if(hasRepoChanged){
   stage('Build ' + APP_NAME) {
     node{
-      steps{
         // Cheking template exists  or else create
         def apitemplate
         if (!templateExists) {
@@ -62,8 +61,7 @@ node{
         } else {
           echo "${ARTIFACT_BUILD} Template exists"
           }
-        }
-
+          
       // to create artifact build
       try{
         echo "Building: " + ARTIFACT_BUILD
