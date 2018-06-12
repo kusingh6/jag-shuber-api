@@ -25,11 +25,6 @@ def SLACK_DEV_CHANNEL="kulpreet_test"
 def SLACK_MAIN_CHANNEL="kulpreet_test"
 
 
-
-def templateSelector = openshift.selector( "template", "mongodb-ephemeral")
-def templateExists = templateSelector.exists()
-
-}
 def hasRepoChanged = false;
 node{
   def lastCommit = getLastCommit()
