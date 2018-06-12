@@ -48,7 +48,7 @@ node{
     node{
         // Cheking template exists  or else create
         openshift.withProject() {
-          def templateSelector = openshift.selector( "bc/${IMAGESTREAM_NAME}" )
+          def templateSelector = openshift.selector( "bc/${RUNTIME_BUILD}" )
           def templateExists = templateSelector.exists()
 
           def apitemplate
@@ -77,6 +77,7 @@ node{
           script: """oc get istag ${IMAGESTREAM_NAME}:latest -o template --template=\"{{.image.dockerImageReference}}\"|awk -F \":\" \'{print \$3}\'""",
           returnStdout: true).trim()
         echo ">> IMAGE_HASH: ${IMAGE_HASH}"
+
       }catch(error){
         echo "Error"
         // slackNotify(
@@ -113,7 +114,7 @@ node{
         // openshift.withCluster() {
         //   openshift.withProject(TAG_NAMES[0]) {
         //     echo "Building Postgress and api deployment config: " + IMAGESTREAM_NAME
-        //     def PSTGRESS_IMG = openshift.create(readFile('openshift/api-postgres-deploy.json')).object()
+        //     PSTGRESS_IMG = openshift.create(readFile('openshift/api-postgres-deploy.json')).object()
         //   }
         // }
         slackNotify(
