@@ -48,20 +48,22 @@ node{
     node{
         // Cheking template exists  or else create
         openshift.withProject() {
-        def apitemplate
-        if (!templateExists) {
-          template = openshift.create('./openshift/templates/api/api-build.json').object()
-            } else {
-              // template = templateSelector.object()
-              echo "${IMAGESTREAM_NAME} Template exists"
-              }
+          def templateSelector = openshift.selector( "template", "${IMAGESTREAM_NAME}")
+          def templateExists = templateSelector.exists()
 
-        def apibuildtemplate
-        if (!templateExists) {
-          apibuildtemplate = openshift.create('./openshift/templates/api-builder/api-builder-builds.json').object()
-        } else {
-          echo "${ARTIFACT_BUILD} Template exists"
+          def apitemplate
+          if (!templateExists) {
+            apitemplate = openshift.create('./openshift/templates/api/api-build.json').object()
+          } else {
+            echo "${ARTIFACT_BUILD} Template exists"
           }
+        
+          def apibuildtemplate
+          if (!templateExists) {
+            apibuildtemplate = openshift.create('./openshift/templates/api-builder/api-builder-build.json').object()
+          } else {
+            echo "${ARTIFACT_BUILD} Template exists"
+            }
         }
 
       // to create artifact build
