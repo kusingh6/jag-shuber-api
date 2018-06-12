@@ -48,7 +48,7 @@ node{
     node{
         // Cheking template exists  or else create
         openshift.withProject() {
-          def templateSelector = openshift.selector( "${WORKSPACE}/openshift/templates/api/api-build.json", "${IMAGESTREAM_NAME}")
+          def templateSelector = openshift.selector("${IMAGESTREAM_NAME}")
           def templateExists = templateSelector.exists()
 
           def apitemplate
