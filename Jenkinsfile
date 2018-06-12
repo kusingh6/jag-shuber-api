@@ -78,21 +78,21 @@ node{
           returnStdout: true).trim()
         echo ">> IMAGE_HASH: ${IMAGE_HASH}"
       }catch(error){
-        // echo "Error"
-        slackNotify(
-          'Build Broken 🤕',
-          "The latest ${APP_NAME} build seems to have broken\n'${error.message}'",
-          'danger',
-          env.SLACK_HOOK,
-          SLACK_DEV_CHANNEL,
-          [
-            [
-              type: "button",
-              text: "View Build Logs",
-              style:"danger",           
-              url: "${currentBuild.absoluteUrl}/console"
-            ]
-          ])
+        echo "Error"
+        // slackNotify(
+        //   'Build Broken 🤕',
+        //   "The latest ${APP_NAME} build seems to have broken\n'${error.message}'",
+        //   'danger',
+        //   env.SLACK_HOOK,
+        //   SLACK_DEV_CHANNEL,
+        //   [
+        //     [
+        //       type: "button",
+        //       text: "View Build Logs",
+        //       style:"danger",           
+        //       url: "${currentBuild.absoluteUrl}/console"
+        //     ]
+        //   ])
         throw error
         }
       }
