@@ -61,10 +61,8 @@ node{
           apibuildtemplate = openshift.create('./openshift/templates/api-builder/api-builder-builds.json').object()
         } else {
           echo "${ARTIFACT_BUILD} Template exists"
-        }
           }
-      }
-
+        }
 
       // to create artifact build
       try{
@@ -97,7 +95,6 @@ node{
         }
       }
     }
-  }
   
 
   stage('Deploy ' + TAG_NAMES[0]) {
