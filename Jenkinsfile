@@ -108,7 +108,7 @@ node{
         // Trigger a new deployment
         // openshiftDeploy deploymentConfig: IMAGESTREAM_NAME, namespace: environment
 
-        openshift.withProject() {
+        openshift.withProject(TAG_NAMES[0]) {
         echo "Building Postgress and api deployment config: " + IMAGESTREAM_NAME
         def PSTGRESS_IMG = openshift.create(readFile("${WORKSPACE}/openshift/api-postgress-deploy.json"))
         }
