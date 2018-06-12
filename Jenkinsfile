@@ -47,6 +47,7 @@ node{
   stage('Build ' + APP_NAME) {
     node{
         // Cheking template exists  or else create
+        openshift.withProject() {
         def apitemplate
         if (!templateExists) {
           template = openshift.create('./openshift/templates/api/api-build.json').object()
@@ -61,7 +62,8 @@ node{
         } else {
           echo "${ARTIFACT_BUILD} Template exists"
           }
-          
+        }
+
       // to create artifact build
       try{
         echo "Building: " + ARTIFACT_BUILD
