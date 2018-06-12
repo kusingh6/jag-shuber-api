@@ -19,8 +19,8 @@ def APP_URLS = [
 
 // You shouldn't have to edit these if you're following the conventions
 def ARTIFACT_BUILD = APP_NAME + '-builder-build'
-//def RUNTIME_BUILD = PROJECT_PREFIX + '-' + APP_NAME
-def IMAGESTREAM_NAME = PROJECT_PREFIX + '-' + APP_NAME
+def RUNTIME_BUILD = PROJECT_PREFIX + '-' + APP_NAME
+def IMAGESTREAM_NAME = APP_NAME
 def SLACK_DEV_CHANNEL="kulpreet_test"
 def SLACK_MAIN_CHANNEL="kulpreet_test"
 
@@ -104,16 +104,16 @@ node{
     def url = APP_URLS[0]
     node{
       try{
-        openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
+        openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
         // Trigger a new deployment
         // openshiftDeploy deploymentConfig: IMAGESTREAM_NAME, namespace: environment
 
         // PSTGRESS_IMG = sh ( """oc create -n ${environment} -f - | oc process -f "${WORKSPACE}/openshift/api-postgres-deploy.json" $params """)
         // echo ">> ${PSTGRESS_IMG}"
-        openshift.withCluster() {
-          openshift.withProject(TAG_NAMES[0]) {
-            echo "Building Postgress and api deployment config: " + IMAGESTREAM_NAME
-            def PSTGRESS_IMG = openshift.create(readFile('openshift/api-postgres-deploy.json')).object()
+        // openshift.withCluster() {
+        //   openshift.withProject(TAG_NAMES[0]) {
+        //     echo "Building Postgress and api deployment config: " + IMAGESTREAM_NAME
+        //     def PSTGRESS_IMG = openshift.create(readFile('openshift/api-postgres-deploy.json')).object()
           }
         }
         slackNotify(
