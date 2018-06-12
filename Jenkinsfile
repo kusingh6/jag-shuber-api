@@ -18,12 +18,18 @@ def APP_URLS = [
 ]
 
 // You shouldn't have to edit these if you're following the conventions
-def ARTIFACT_BUILD = APP_NAME+'-builder-build'
-def RUNTIME_BUILD = PROJECT_PREFIX+'-'+APP_NAME
-def IMAGESTREAM_NAME = PROJECT_PREFIX+'-'+APP_NAME
+def ARTIFACT_BUILD = APP_NAME + '-builder-build'
+//def RUNTIME_BUILD = PROJECT_PREFIX + '-' + APP_NAME
+def IMAGESTREAM_NAME = PROJECT_PREFIX + '-' + APP_NAME
 def SLACK_DEV_CHANNEL="kulpreet_test"
 def SLACK_MAIN_CHANNEL="kulpreet_test"
 
+
+
+def templateSelector = openshift.selector( "template", "mongodb-ephemeral")
+def templateExists = templateSelector.exists()
+
+}
 def hasRepoChanged = false;
 node{
   def lastCommit = getLastCommit()
@@ -45,13 +51,30 @@ node{
 //if(hasRepoChanged){
   stage('Build ' + APP_NAME) {
     node{
+      steps{
+        // Cheking template exists  or else create
+        def apitemplate
+        if (!templateExists) {
+          template = openshift.create('./openshift/templates/api/api-build.json').object()
+            } else {
+              // template = templateSelector.object()
+              echo "${IMAGESTREAM_NAME} Template exists"
+              }
+
+        def apibuildtemplate
+        if (!templateExists) {
+          apibuildtemplate = openshift.create('./openshift/templates/api-builder/api-builder-builds.json').object()
+        } else {
+          echo "${ARTIFACT_BUILD} Template exists"
+        }
+          }
+      }
+
+
+      // to create artifact build
       try{
         echo "Building: " + ARTIFACT_BUILD
         openshiftBuild bldCfg: ARTIFACT_BUILD, showBuildLogs: 'true'
-        
-        // the RUNTIME_BUILD should be triggered by the build above, but manually starting to match BCdevops 
-        echo "Assembling Runtime: " + RUNTIME_BUILD
-        openshiftBuild bldCfg: RUNTIME_BUILD, showBuildLogs: 'true'
         
         // Don't tag with BUILD_ID so the pruner can do it's job; it won't delete tagged images.
         // Tag the images for deployment based on the image's hash
@@ -76,9 +99,11 @@ node{
             ]
           ])
         throw error
+        }
       }
     }
   }
+  
 
   stage('Deploy ' + TAG_NAMES[0]) {
     def environment = TAG_NAMES[0]
@@ -86,6 +111,10 @@ node{
     node{
       try{
         openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
+
+        echo "Building Postgress and api deployment config: " + RUNTIME_BUILD
+        def PSTGRESS_IMG = openshift.create( openshift.process( "./openshift/api-postgress-deploy.json" ) )
+
         slackNotify(
             "New Version in ${environment} 🚀",
             "A new version of the ${APP_NAME} is now in ${environment}",
