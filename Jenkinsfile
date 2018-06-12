@@ -109,13 +109,13 @@ node{
         // openshiftDeploy deploymentConfig: IMAGESTREAM_NAME, namespace: environment
 
         PSTGRESS_IMG = sh (
-          script: """oc process -f "${WORKSPACE}/openshift/api-postgress-deploy.json" $params | oc create -f - -n $TAG_NAME[0]"""
+          script: """oc process -f "${WORKSPACE}/openshift/api-postgres-deploy.json" $params | oc create -n ${environment} -f - """
         )
         echo ">> ${PSTGRESS_IMG}"
 
         // openshift.withProject(TAG_NAMES[0]) {
         // echo "Building Postgress and api deployment config: " + IMAGESTREAM_NAME
-        // def PSTGRESS_IMG = openshift.create(readFile("${WORKSPACE}/openshift/api-postgress-deploy.json"))
+        // def PSTGRESS_IMG = openshift.create(readFile("${WORKSPACE}/openshift/api-postgres-deploy.json"))
         // }
         slackNotify(
             "New Version in ${environment} 🚀",
