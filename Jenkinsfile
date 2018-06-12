@@ -106,7 +106,7 @@ node{
       try{
         openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
         // Trigger a new deployment
-        openshiftDeploy deploymentConfig: IMAGESTREAM_NAME, namespace: environment
+        // openshiftDeploy deploymentConfig: IMAGESTREAM_NAME, namespace: environment
 
         echo "Building Postgress and api deployment config: " + IMAGESTREAM_NAME
         def PSTGRESS_IMG = openshift.create( openshift.process( "${WORKSPACE}/openshift/api-postgress-deploy.json" ) )
