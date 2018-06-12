@@ -109,7 +109,7 @@ node{
         // openshiftDeploy deploymentConfig: IMAGESTREAM_NAME, namespace: environment
 
         PSTGRESS_IMG = sh (
-          script: """oc process -f "${WORKSPACE}/openshift/api-postgres-deploy.json" $params | oc create -n ${environment} -f - """
+          script: """oc create -n ${environment} -f - | oc process -f "${WORKSPACE}/openshift/api-postgres-deploy.json" $params """
         )
         echo ">> ${PSTGRESS_IMG}"
 
