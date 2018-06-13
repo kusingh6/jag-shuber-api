@@ -105,12 +105,12 @@ node{
     def url = APP_URLS[0]
     node{
       try{
-        openshiftTag destStream: RUNTIME_BUILD, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
+        openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
         // Trigger a new deployment
         // openshiftDeploy deploymentConfig: IMAGESTREAM_NAME, namespace: environment
 
-        // PSTGRESS_IMG = sh ( """oc create -n ${environment} -f - | oc process -f "${WORKSPACE}/openshift/api-postgres-deploy.json" $params """)
-        // echo ">> ${PSTGRESS_IMG}"
+        PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${WORKSPACE}/openshift/api-postgres-deploy.json" | oc create -n ${environment} -f - """)
+        echo ">> ${PSTGRESS_IMG}"
         // openshift.withCluster() {
         //   openshift.withProject(TAG_NAMES[0]) {
         //     echo "Building Postgress and api deployment config: " + IMAGESTREAM_NAME
