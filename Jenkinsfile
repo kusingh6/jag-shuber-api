@@ -87,7 +87,7 @@
           echo ">> IMAGE_HASH: ${IMAGE_HASH}"
 
         }catch(error){
-          echo "Error"
+          echo "Error in Build"
           // slackNotify(
           //   'Build Broken 🤕',
           //   "The latest ${APP_NAME} build seems to have broken\n'${error.message}'",
@@ -115,55 +115,116 @@
     node{
       try{
         openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
-        // Trigger a new deployment
-        // openshiftDeploy deploymentConfig: IMAGESTREAM_NAME, namespace: environment
 
+        // Check for deployment config for api and postgress in dev environment
         PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${WORKSPACE}@script/openshift/api-postgres-deploy.json" | oc create -f - """)
         echo ">> ${PSTGRESS_IMG}"
-        // openshift.withCluster() {
-        //   openshift.withProject(TAG_NAMES[0]) {
-        //     echo "Building Postgress and api deployment config: " + IMAGESTREAM_NAME
-        //     PSTGRESS_IMG = openshift.create(readFile('openshift/api-postgres-deploy.json')).object()
-        //   }
-        // }
-        slackNotify(
-            "New Version in ${environment} 🚀",
-            "A new version of the ${APP_NAME} is now in ${environment}",
-            'good',
-            env.SLACK_HOOK,
-            SLACK_MAIN_CHANNEL,
-            [
-              [
-                type: "button",
-                text: "View New Version",         
-                url: "${url}"
-              ],
-              [
-                type: "button",            
-                text: "Deploy to Test?",
-                style: "primary",              
-                url: "${currentBuild.absoluteUrl}/input"
-              ]
-            ])
+        
+        // slackNotify(
+        //     "New Version in ${environment} 🚀",
+        //     "A new version of the ${APP_NAME} is now in ${environment}",
+        //     'good',
+        //     env.SLACK_HOOK,
+        //     SLACK_MAIN_CHANNEL,
+        //     [
+        //       [
+        //         type: "button",
+        //         text: "View New Version",         
+        //         url: "${url}"
+        //       ],
+        //       [
+        //         type: "button",            
+        //         text: "Deploy to Test?",
+        //         style: "primary",              
+        //         url: "${currentBuild.absoluteUrl}/input"
+        //       ]
+        //     ])
       }catch(error){
-        slackNotify(
-          "Couldn't deploy to ${environment} 🤕",
-          "The latest deployment of the ${APP_NAME} to ${environment} seems to have failed\n'${error.message}'",
-          'danger',
-          env.SLACK_HOOK,
-          SLACK_DEV_CHANNEL,
-          [
-            [
-              type: "button",
-              text: "View Build Logs",
-              style:"danger",        
-              url: "${currentBuild.absoluteUrl}/console"
-            ]
-          ])
+        // slackNotify(
+        //   "Couldn't deploy to ${environment} 🤕",
+        //   "The latest deployment of the ${APP_NAME} to ${environment} seems to have failed\n'${error.message}'",
+        //   'danger',
+        //   env.SLACK_HOOK,
+        //   SLACK_DEV_CHANNEL,
+        //   [
+        //     [
+        //       type: "button",
+        //       text: "View Build Logs",
+        //       style:"danger",        
+        //       url: "${currentBuild.absoluteUrl}/console"
+        //     ]
+        //   ])
+        echo "Error in DEV"
       }
     }
   }
+  stages {
+    stage('Deploy ' + TAG_NAMES[1]) {
+      def environment = TAG_NAMES[1]
+      def url = APP_URLS[1]
+      timeout(time:3, unit: 'DAYS'){ input "Deploy to ${environment}?"}
+      parallel {
+        stage('Deploy Shuber Api') {
+          steps{
+            // Check for deployment config for api and postgress in dev environment
+            PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${WORKSPACE}@script/openshift/api-postgres-deploy.json" | oc create -f - """)
+            echo ">> ${PSTGRESS_IMG}"
 
+            // Push image changes to Test
+            openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
+          }
+          post {
+            success {
+              slackNotify(
+                "New Version in ${environment} 🚀",
+                "A new version of the ${APP_NAME} is now in ${environment}",
+              'good',
+              env.SLACK_HOOK,
+              SLACK_MAIN_CHANNEL,
+                [
+                  [
+                    type: "button",
+                    text: "View New Version",           
+                    url: "${url}"
+                  ],
+                ])
+            }
+            failure {
+              slackNotify(
+                "Couldn't deploy to ${environment} 🤕",
+                "The latest deployment of the ${APP_NAME} to ${environment} seems to have failed\n'${error.message}'",
+                'danger',
+                env.SLACK_HOOK,
+                SLACK_DEV_CHANNEL,
+                [
+                  [
+                    type: "button",
+                    text: "View Build Logs",
+                    style:"danger",        
+                    url: "${currentBuild.absoluteUrl}/console"
+                  ]
+                ])
+              }
+            }
+          }
+        }
+        stage('Running integration testing') {
+          steps {
+            echo " Run test cases here"
+          }
+          post {
+            success {
+              echo " Test cleared 🚀"
+            }
+            failure {
+              echo "Test failure alert!! couldn't cleared 🤕"
+            }
+          }
+        }
+      }
+
+    }
+  }
   stage('Deploy ' + TAG_NAMES[1]){
     def environment = TAG_NAMES[1]
     def url = APP_URLS[1]
@@ -172,6 +233,7 @@
       stage('Deploy Shuber Api'){
         node{
           steps{
+            
             openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
             slackNotify(
                 "New Version in ${environment} 🚀",
