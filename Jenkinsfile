@@ -23,7 +23,7 @@ def RUNTIME_BUILD = PROJECT_PREFIX + '-' + APP_NAME
 def IMAGESTREAM_NAME = APP_NAME
 def SLACK_DEV_CHANNEL="kulpreet_test"
 def SLACK_MAIN_CHANNEL="kulpreet_test"
-def scmVars = checkout scm
+// def scmVars = checkout scm
 
 def hasRepoChanged = false;
 node{
