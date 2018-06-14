@@ -49,11 +49,16 @@ node{
     node{
         // Cheking template exists  or else create
         openshift.withProject() {
-          def templateSelector = openshift.selector( "bc/${RUNTIME_BUILD}" )
-          def templateExists = templateSelector.exists()
+          def templateSelector_RUN = openshift.selector( "bc/${RUNTIME_BUILD}" )
+          def templateExists_RUN = templateSelector.exists()
 
-          def apitemplate
-          if (!templateExists) { 
+          def templateSelector_ART = openshift.selector( "bc/${ARTIFACT_BUILD}" )
+          def templateExists_ART = templateSelector.exists()
+
+
+
+          // def apitemplate
+          if (!templateExists_ART) { 
             // apitemplate = openshift.create( openshift.process("${WORKSPACE}@script/openshift/templates/api/api-build.json") ).object()
             APIBBUILD_IMG = sh ( """oc process -f "${WORKSPACE}@script/openshift/templates/api-builder/api-builder-build.json" | oc create -f - """)
             echo ">> ${APIBBUILD_IMG}"
@@ -61,13 +66,13 @@ node{
             echo "${ARTIFACT_BUILD} Template exists"
           }
         
-          def apibuildtemplate
-          if (!templateExists) {
+          // def apibuildtemplate
+          if (!templateExists_RUN) {
             // apibuildtemplate = openshift.create( openshift.process("${WORKSPACE}@script/openshift/templates/api-builder/api-builder-build.json") ).object()
             APIBUILD_IMG = sh ( """oc process -f "${WORKSPACE}@script/openshift/templates/api/api-build.json" | oc create -f - """)
             echo ">> ${APIBUILD_IMG}"
           } else {
-            echo "${ARTIFACT_BUILD} Template exists"
+            echo "${RUNTIME_BUILD} Template exists"
             }
         }
 
