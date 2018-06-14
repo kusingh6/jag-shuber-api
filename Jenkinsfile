@@ -53,7 +53,7 @@ node{
 
           def apitemplate
           if (!templateExists) {
-            echo ${WORKSPACE@SCRIPT}
+            // echo ${WORKSPACE@SCRIPT}
             apitemplate = openshift.create( openshift.process("openshift/templates/api/api-build.json") ).object()
           } else {
             echo "${ARTIFACT_BUILD} Template exists"
