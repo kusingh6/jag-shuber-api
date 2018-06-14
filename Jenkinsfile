@@ -224,7 +224,7 @@
       }
 
     }
-  }
+  
   stage('Deploy ' + TAG_NAMES[1]){
     def environment = TAG_NAMES[1]
     def url = APP_URLS[1]
