@@ -109,7 +109,7 @@ node{
         // Trigger a new deployment
         // openshiftDeploy deploymentConfig: IMAGESTREAM_NAME, namespace: environment
 
-        PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${WORKSPACE}/openshift/api-postgres-deploy.json" | oc create -n ${environment} -f - """)
+        PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "https://raw.githubusercontent.com/kusingh6/jag-shuber-api/integration-pipeline-development/openshift/api-postgres-deploy.json" | oc create -n ${environment} -f - """)
         echo ">> ${PSTGRESS_IMG}"
         // openshift.withCluster() {
         //   openshift.withProject(TAG_NAMES[0]) {
