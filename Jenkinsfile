@@ -50,10 +50,10 @@ node{
         // Cheking template exists  or else create
         openshift.withProject() {
           def templateSelector_RUN = openshift.selector( "bc/${RUNTIME_BUILD}" )
-          def templateExists_RUN = templateSelector.exists()
+          def templateExists_RUN = templateSelector_RUN.exists()
 
           def templateSelector_ART = openshift.selector( "bc/${ARTIFACT_BUILD}" )
-          def templateExists_ART = templateSelector.exists()
+          def templateExists_ART = templateSelector_ART.exists()
 
 
 
