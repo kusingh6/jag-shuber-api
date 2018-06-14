@@ -54,14 +54,18 @@ node{
 
           def apitemplate
           if (!templateExists) { 
-            apitemplate = openshift.create( openshift.process("${WORKSPACE}@script/openshift/templates/api/api-build.json") ).object()
+            // apitemplate = openshift.create( openshift.process("${WORKSPACE}@script/openshift/templates/api/api-build.json") ).object()
+            APIBBUILD_IMG = sh ( """oc process -f "${WORKSPACE}@script/openshift/templates/api-builder/api-builder-build.json" | oc create -f - """)
+            echo ">> ${APIBBUILD_IMG}"
           } else {
             echo "${ARTIFACT_BUILD} Template exists"
           }
         
           def apibuildtemplate
           if (!templateExists) {
-            apibuildtemplate = openshift.create( openshift.process("${WORKSPACE}@script/openshift/templates/api-builder/api-builder-build.json") ).object()
+            // apibuildtemplate = openshift.create( openshift.process("${WORKSPACE}@script/openshift/templates/api-builder/api-builder-build.json") ).object()
+            APIBUILD_IMG = sh ( """oc process -f "${WORKSPACE}@script/openshift/templates/api/api-build.json" | oc create -f - """)
+            echo ">> ${APIBUILD_IMG}"
           } else {
             echo "${ARTIFACT_BUILD} Template exists"
             }
@@ -110,7 +114,7 @@ node{
         // Trigger a new deployment
         // openshiftDeploy deploymentConfig: IMAGESTREAM_NAME, namespace: environment
 
-        PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${WORKSPACE}@script/openshift/api-postgres-deploy.json" | oc create -n ${environment} -f - """)
+        PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${WORKSPACE}@script/openshift/api-postgres-deploy.json" | oc create -f - """)
         echo ">> ${PSTGRESS_IMG}"
         // openshift.withCluster() {
         //   openshift.withProject(TAG_NAMES[0]) {
