@@ -114,7 +114,7 @@
   // Creating Emphemeral post-gress instance for testing
   stage('Postgress Emphemeral Image'){
     node{
-        step{
+        steps{
           sh "oc process -f "./openshift/posgress-emphemeral.json" $params | oc create -f -"
             }
           }
@@ -123,7 +123,7 @@
   //Running functional Test cases - in tools project
   stage('Run Test Cases'){
           node{
-            step{
+            steps{
               sh "echo 'Run Test Case scripts here' "
             }
             post{
