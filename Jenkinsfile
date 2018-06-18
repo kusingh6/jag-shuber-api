@@ -43,8 +43,7 @@
     hasRepoChanged = false;
   }
   }
-pipeline{
-  stages{
+
   //if(hasRepoChanged){
   stage('Build ' + APP_NAME) {
         // Cheking template exists  or else create
@@ -54,8 +53,6 @@ pipeline{
 
           def templateSelector_ART = openshift.selector( "bc/${ARTIFACT_BUILD}" )
           def templateExists_ART = templateSelector_ART.exists()
-
-
 
           // def apitemplate
           if (!templateExists_ART) { 
@@ -109,25 +106,30 @@ pipeline{
         }
       }
     }
+  
 
   // Creating Emphemeral post-gress instance for testing
   stage('Postgress Emphemeral Image'){
-        steps{
-          sh "oc process -f "./openshift/posgress-emphemeral.json" $params | oc create -f -"
-            }
-          }
+      try{
+        echo "Creating Ephemeral Postgress instance for testing"
+        sh "oc process -f "./openshift/posgress-emphemeral.json" $params | oc create -f -"
+      } catch(error){
+        echo "Error in creating postgress instance"
+        throw error
+      }
+    }
 
   //Running functional Test cases - in tools project
   stage('Run Test Cases'){
-            steps{
-              sh "echo 'Run Test Case scripts here' "
-            }
-            post{
-              always{
-                sh "oc process -f "./openshift/posgress-emphemeral.json" $params | oc delete -f -"
-              }
-            }
-          }
+    try{
+      sh "echo 'Run Test Case scripts here' "
+      sh "oc process -f "./openshift/posgress-emphemeral.json" $params | oc delete -f -"
+      echo "postgress instance deleted successfully"
+    } catch(error){
+      echo "Error while test cases are running"
+      throw error
+      }
+    }
 
   stage('Deploy ' + TAG_NAMES[0]) {
     def environment = TAG_NAMES[0]
@@ -248,27 +250,26 @@ pipeline{
     def environment = TAG_NAMES[1]
     def url = APP_URLS[1]
     timeout(time:3, unit: 'DAYS'){ input "Deploy to ${environment}?"}
-    stage('Deploy Shuber Api'){
-        steps{      
-          openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
-            slackNotify(
-              "New Version in ${environment} 🚀",
-              "A new version of the ${APP_NAME} is now in ${environment}",
-              'good',
-              env.SLACK_HOOK,
-              SLACK_MAIN_CHANNEL,
-                [
-                  [
-                    type: "button",
-                    text: "View New Version",           
-                    url: "${url}"
-                  ],
-                ])
-            }   
+    try{
+      openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
+        slackNotify(
+          "New Version in ${environment} 🚀",
+          "A new version of the ${APP_NAME} is now in ${environment}",
+          'good',
+          env.SLACK_HOOK,
+          SLACK_MAIN_CHANNEL,
+            [
+              [
+                type: "button",
+                text: "View New Version",           
+                url: "${url}"
+              ],
+            ])
+          } catch(error){
+            echo "Build failed"
+
+          }   
           }
-        }
-  }
-}
   // stage('Deploy ' + TAG_NAMES[1]){
   //   def environment = TAG_NAMES[1]
   //   def url = APP_URLS[1]
