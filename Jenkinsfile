@@ -271,6 +271,7 @@
             }   
           }
         }
+  }
 
   // stage('Deploy ' + TAG_NAMES[1]){
   //   def environment = TAG_NAMES[1]
