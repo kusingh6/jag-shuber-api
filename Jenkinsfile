@@ -46,6 +46,7 @@
 
   //if(hasRepoChanged){
   stage('Build ' + APP_NAME) {
+    node{
         // Cheking template exists  or else create
         openshift.withProject() {
           def templateSelector_RUN = openshift.selector( "bc/${RUNTIME_BUILD}" )
@@ -106,6 +107,7 @@
         }
       }
     }
+  }
   
 
   // Creating Emphemeral post-gress instance for testing
