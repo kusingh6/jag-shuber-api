@@ -115,7 +115,9 @@
     node{
       try{
         echo "Creating Ephemeral Postgress instance for testing"
-        sh "oc process -f "./openshift/posgress-emphemeral.json" $params | oc create -f -"
+        POSTGRESS = sh (
+          script: """oc process -f "./openshift/posgress-emphemeral.json" $params | oc create -f -""")
+          echo ">> ${POSTGRESS}" 
       } catch(error){
         echo "Error in creating postgress instance"
         throw error
@@ -127,8 +129,10 @@
   stage('Run Test Cases'){
     node{
     try{
-      sh "echo 'Run Test Case scripts here' "
-      sh "oc process -f "./openshift/posgress-emphemeral.json" $params | oc delete -f -"
+      echo "Run Test Case scripts here"
+      POSTGRESS_DEL = sh (
+        script: """oc process -f "./openshift/posgress-emphemeral.json" $params | oc delete -f -""")
+        echo ">> ${POSTGRESS_DEL}"
       echo "postgress instance deleted successfully"
     } catch(error){
       echo "Error while test cases are running"
