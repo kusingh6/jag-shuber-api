@@ -43,7 +43,7 @@
     hasRepoChanged = false;
   }
   }
-
+pipeline{
   //if(hasRepoChanged){
   stage('Build ' + APP_NAME) {
     node{
@@ -301,4 +301,4 @@
   //   stage('No Changes to Build 👍'){
   //     currentBuild.result = 'SUCCESS'
   //   }
-  // }
+  }
