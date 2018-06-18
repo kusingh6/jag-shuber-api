@@ -130,9 +130,9 @@
     node{
     try{
       echo "Run Test Case scripts here"
-      POSTGRESS_DEL = sh (
-        script: """oc process -f "${WORKSPACE}@script/openshift/posgress-emphemeral.json" | oc delete -f - """)
-        echo ">> ${POSTGRESS_DEL}"
+      // POSTGRESS_DEL = sh (
+      //   script: """oc process -f "${WORKSPACE}@script/openshift/posgress-emphemeral.json" | oc delete -f - """)
+      //   echo ">> ${POSTGRESS_DEL}"
       echo "postgress instance deleted successfully"
     } catch(error){
       echo "Error while test cases are running"
@@ -264,7 +264,7 @@
     timeout(time:3, unit: 'DAYS'){ input "Deploy to ${environment}?"}
     node{
     try{
-      openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
+      openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
         slackNotify(
           "New Version in ${environment} 🚀",
           "A new version of the ${APP_NAME} is now in ${environment}",
