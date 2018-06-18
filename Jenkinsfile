@@ -116,7 +116,7 @@
       try{
         echo "Creating Ephemeral Postgress instance for testing"
         POSTGRESS = sh (
-          script: """oc process -f "${WORKSPACE}@script/openshift/posgress-emphemeral.json" $params | oc create -f -""")
+          script: """oc process -f "${WORKSPACE}@script/openshift/posgress-emphemeral.json" | oc create -f - """)
           echo ">> ${POSTGRESS}" 
       } catch(error){
         echo "Error in creating postgress instance"
@@ -131,7 +131,7 @@
     try{
       echo "Run Test Case scripts here"
       POSTGRESS_DEL = sh (
-        script: """oc process -f "${WORKSPACE}@script/openshift/posgress-emphemeral.json" $params | oc delete -f -""")
+        script: """oc process -f "${WORKSPACE}@script/openshift/posgress-emphemeral.json" | oc delete -f - """)
         echo ">> ${POSTGRESS_DEL}"
       echo "postgress instance deleted successfully"
     } catch(error){
