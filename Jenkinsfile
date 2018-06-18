@@ -158,72 +158,72 @@
       }
     }
   }
-  stages {
-    stage('Deploy ' + TAG_NAMES[1]) {
-      def environment = TAG_NAMES[1]
-      def url = APP_URLS[1]
-      timeout(time:3, unit: 'DAYS'){ input "Deploy to ${environment}?"}
-      parallel {
-        stage('Deploy Shuber Api') {
-          steps{
-            // Check for deployment config for api and postgress in dev environment
-            PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${WORKSPACE}@script/openshift/api-postgres-deploy.json" | oc create -f - """)
-            echo ">> ${PSTGRESS_IMG}"
+  // stages {
+  //   stage('Deploy ' + TAG_NAMES[1]) {
+  //     def environment = TAG_NAMES[1]
+  //     def url = APP_URLS[1]
+  //     timeout(time:3, unit: 'DAYS'){ input "Deploy to ${environment}?"}
+  //     parallel {
+  //       stage('Deploy Shuber Api') {
+  //         steps{
+  //           // Check for deployment config for api and postgress in dev environment
+  //           PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${WORKSPACE}@script/openshift/api-postgres-deploy.json" | oc create -f - """)
+  //           echo ">> ${PSTGRESS_IMG}"
 
-            // Push image changes to Test
-            openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
-          }
-          post {
-            success {
-              slackNotify(
-                "New Version in ${environment} 🚀",
-                "A new version of the ${APP_NAME} is now in ${environment}",
-              'good',
-              env.SLACK_HOOK,
-              SLACK_MAIN_CHANNEL,
-                [
-                  [
-                    type: "button",
-                    text: "View New Version",           
-                    url: "${url}"
-                  ],
-                ])
-            }
-            failure {
-              slackNotify(
-                "Couldn't deploy to ${environment} 🤕",
-                "The latest deployment of the ${APP_NAME} to ${environment} seems to have failed\n'${error.message}'",
-                'danger',
-                env.SLACK_HOOK,
-                SLACK_DEV_CHANNEL,
-                [
-                  [
-                    type: "button",
-                    text: "View Build Logs",
-                    style:"danger",        
-                    url: "${currentBuild.absoluteUrl}/console"
-                  ]
-                ])
-              }
-            }
-          }
-        }
-        stage('Running integration testing') {
-          steps {
-            echo " Run test cases here"
-          }
-          post {
-            success {
-              echo " Test cleared 🚀"
-            }
-            failure {
-              echo "Test failure alert!! couldn't cleared 🤕"
-            }
-          }
-        }
-      }
+  //           // Push image changes to Test
+  //           openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
+  //         }
+  //         post {
+  //           success {
+  //             slackNotify(
+  //               "New Version in ${environment} 🚀",
+  //               "A new version of the ${APP_NAME} is now in ${environment}",
+  //             'good',
+  //             env.SLACK_HOOK,
+  //             SLACK_MAIN_CHANNEL,
+  //               [
+  //                 [
+  //                   type: "button",
+  //                   text: "View New Version",           
+  //                   url: "${url}"
+  //                 ],
+  //               ])
+  //           }
+  //           failure {
+  //             slackNotify(
+  //               "Couldn't deploy to ${environment} 🤕",
+  //               "The latest deployment of the ${APP_NAME} to ${environment} seems to have failed\n'${error.message}'",
+  //               'danger',
+  //               env.SLACK_HOOK,
+  //               SLACK_DEV_CHANNEL,
+  //               [
+  //                 [
+  //                   type: "button",
+  //                   text: "View Build Logs",
+  //                   style:"danger",        
+  //                   url: "${currentBuild.absoluteUrl}/console"
+  //                 ]
+  //               ])
+  //             }
+  //           }
+  //         }
+  //       }
+  //       stage('Running integration testing') {
+  //         steps {
+  //           echo " Run test cases here"
+  //         }
+  //         post {
+  //           success {
+  //             echo " Test cleared 🚀"
+  //           }
+  //           failure {
+  //             echo "Test failure alert!! couldn't cleared 🤕"
+  //           }
+  //         }
+  //       }
+  //     }
 
-    }
+  //   }
   
   stage('Deploy ' + TAG_NAMES[1]){
     def environment = TAG_NAMES[1]
