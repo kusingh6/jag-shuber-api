@@ -78,14 +78,14 @@
         try{
           echo "Building: " + ARTIFACT_BUILD
           openshiftBuild bldCfg: ARTIFACT_BUILD, showBuildLogs: 'true'
-          def STATUS = sh (
-            script: """oc rollout status -w ${RUNTIME_BUILD}"""
-          )
+          // def STATUS = sh (
+          //   script: """ wait 60; oc logs bc/${RUNTIME_BUILD}| grep 'Push successful' """
+          // )
         
           // Don't tag with BUILD_ID so the pruner can do it's job; it won't delete tagged images.
           // Tag the images for deployment based on the image's hash
           IMAGE_HASH = sh (
-          script: """oc get istag ${RUNTIME_BUILD}:latest -o template --template=\"{{.image.dockerImageReference}}\"|awk -F \":\" \'{print \$3}\'""",
+          script: """wait 100; oc get istag ${RUNTIME_BUILD}:latest -o template --template=\"{{.image.dockerImageReference}}\"|awk -F \":\" \'{print \$3}\'""",
           returnStdout: true).trim()
           echo ">> IMAGE_HASH: ${IMAGE_HASH}"
 
