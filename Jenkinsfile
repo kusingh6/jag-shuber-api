@@ -120,7 +120,7 @@
           echo ">> ${POSTGRESS}" 
         // DBE_STATUS = sh (
         //   script: : """ oc 
-        )
+        // )
       } catch(error){
         echo "Error in creating postgress instance"
         throw error
