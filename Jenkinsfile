@@ -79,7 +79,7 @@
           echo "Building: " + ARTIFACT_BUILD
           openshiftBuild bldCfg: ARTIFACT_BUILD, showBuildLogs: 'true'
           def STATUS = sh (
-            script: """oc logs -f bc/${RUNTIME_BUILD}"""
+            script: """sleep 60; oc logs -f bc/${RUNTIME_BUILD}"""
           )
         
           // Don't tag with BUILD_ID so the pruner can do it's job; it won't delete tagged images.
