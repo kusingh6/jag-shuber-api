@@ -85,7 +85,7 @@
           // Don't tag with BUILD_ID so the pruner can do it's job; it won't delete tagged images.
           // Tag the images for deployment based on the image's hash
           IMAGE_HASH = sh (
-          script: """sleep 120; oc get istag shuber-api:latest | grep sha256: | awk -F "sha256:" '{print $NF}'""",
+          script: """ sleep 120; oc get istag ${RUNTIME_BUILD}:latest | grep sha256: | awk -F "sha256:" '{print $NF}'""",
           returnStdout: true).trim()
           echo ">> IMAGE_HASH: ${IMAGE_HASH}"
 
