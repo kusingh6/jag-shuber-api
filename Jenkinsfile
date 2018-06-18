@@ -130,7 +130,6 @@
             }
           }
         } 
-      }
 
   stage('Deploy ' + TAG_NAMES[0]) {
     def environment = TAG_NAMES[0]
