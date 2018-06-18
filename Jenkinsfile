@@ -78,6 +78,9 @@
         try{
           echo "Building: " + ARTIFACT_BUILD
           openshiftBuild bldCfg: ARTIFACT_BUILD, showBuildLogs: 'true'
+          def STATUS = sh (
+            script: """oc rollout status -w ${RUNTIME_BUILD}"""
+          )
         
           // Don't tag with BUILD_ID so the pruner can do it's job; it won't delete tagged images.
           // Tag the images for deployment based on the image's hash
@@ -110,12 +113,10 @@
 
   // Creating Emphemeral post-gress instance for testing
   stage('Postgress Emphemeral Image'){
-          node{
-            step{
-              sh "oc process -f "./openshift/posgress-emphemeral.json" $params | oc create -f -"
+        steps{
+          sh "oc process -f "./openshift/posgress-emphemeral.json" $params | oc create -f -"
             }
           }
-        }
 
   //Running functional Test cases - in tools project
   stage('Run Test Cases'){
