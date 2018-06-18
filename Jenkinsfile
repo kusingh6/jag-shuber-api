@@ -108,6 +108,29 @@
     }
   }
 
+  // Creating Emphemeral post-gress instance for testing
+  stage('Postgress Emphemeral Image'){
+          node{
+            steps{
+              sh "oc process -f "./openshift/posgress-emphemeral.json" $params | oc create -f -"
+            }
+          }
+        }
+
+  //Running functional Test cases - in tools project
+  stage('Run Test Cases'){
+          node{
+            steps{
+              sh "echo 'Run Test Case scripts here' "
+            }
+            post{
+              always{
+                sh "oc process -f "./openshift/posgress-emphemeral.json" $params | oc delete -f -"
+              }
+            }
+          }
+        } 
+      }
 
   stage('Deploy ' + TAG_NAMES[0]) {
     def environment = TAG_NAMES[0]
@@ -229,15 +252,13 @@
     def environment = TAG_NAMES[1]
     def url = APP_URLS[1]
     timeout(time:3, unit: 'DAYS'){ input "Deploy to ${environment}?"}
-    parallel{
-      stage('Deploy Shuber Api'){
-        node{
-          steps{
-            
-            openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
+    stage('Deploy Shuber Api'){
+      node{
+        steps{      
+          openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
             slackNotify(
-                "New Version in ${environment} 🚀",
-                "A new version of the ${APP_NAME} is now in ${environment}",
+              "New Version in ${environment} 🚀",
+              "A new version of the ${APP_NAME} is now in ${environment}",
               'good',
               env.SLACK_HOOK,
               SLACK_MAIN_CHANNEL,
@@ -251,27 +272,7 @@
             }   
           }
         }
-        stage('Postgress Emphemeral Image'){
-          node{
-            steps{
-              sh "oc process -f "./openshift/posgress-emphemeral.json" $params | oc create -f -"
-            }
-          }
-        }
-        stage('Run Test Cases'){
-          node{
-            steps{
-              sh "echo 'Run Test Case scripts here' "
-            }
-            post{
-              always{
-                sh "oc process -f "./openshift/posgress-emphemeral.json" $params | oc delete -f -"
-              }
-            }
-          }
-        } 
-      }
-  }
+
   // stage('Deploy ' + TAG_NAMES[1]){
   //   def environment = TAG_NAMES[1]
   //   def url = APP_URLS[1]
