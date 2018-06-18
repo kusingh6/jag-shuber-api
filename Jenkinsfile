@@ -118,6 +118,9 @@
         POSTGRESS = sh (
           script: """oc process -f "${WORKSPACE}@script/openshift/posgress-emphemeral.json" | oc create -f - """)
           echo ">> ${POSTGRESS}" 
+        // DBE_STATUS = sh (
+        //   script: : """ oc 
+        )
       } catch(error){
         echo "Error in creating postgress instance"
         throw error
