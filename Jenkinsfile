@@ -85,7 +85,7 @@
           // Don't tag with BUILD_ID so the pruner can do it's job; it won't delete tagged images.
           // Tag the images for deployment based on the image's hash
           IMAGE_HASH = sh (
-          script: """sleep 100; oc get istag ${RUNTIME_BUILD}:latest -o template --template=\"{{.image.dockerImageReference}}\"|awk -F \":\" \'{print \$3}\'""",
+          script: """sleep 360; oc get istag ${RUNTIME_BUILD}:latest -o template --template=\"{{.image.dockerImageReference}}\"|awk -F \":\" \'{print \$3}\'""",
           returnStdout: true).trim()
           echo ">> IMAGE_HASH: ${IMAGE_HASH}"
 
