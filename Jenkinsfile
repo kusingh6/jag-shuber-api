@@ -44,6 +44,7 @@
   }
   }
 pipeline{
+  stages{
   //if(hasRepoChanged){
   stage('Build ' + APP_NAME) {
     node{
@@ -301,4 +302,5 @@ pipeline{
   //   stage('No Changes to Build 👍'){
   //     currentBuild.result = 'SUCCESS'
   //   }
+  }
   }
