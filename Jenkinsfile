@@ -46,6 +46,7 @@
 
   //if(hasRepoChanged){
   stage('Build ' + APP_NAME) {
+    node{
         // Cheking template exists  or else create
         openshift.withProject() {
           def templateSelector_RUN = openshift.selector( "bc/${RUNTIME_BUILD}" )
@@ -106,10 +107,12 @@
         }
       }
     }
+  }
   
 
   // Creating Emphemeral post-gress instance for testing
   stage('Postgress Emphemeral Image'){
+    node{
       try{
         echo "Creating Ephemeral Postgress instance for testing"
         sh "oc process -f "./openshift/posgress-emphemeral.json" $params | oc create -f -"
@@ -118,9 +121,11 @@
         throw error
       }
     }
+  }
 
   //Running functional Test cases - in tools project
   stage('Run Test Cases'){
+    node{
     try{
       sh "echo 'Run Test Case scripts here' "
       sh "oc process -f "./openshift/posgress-emphemeral.json" $params | oc delete -f -"
@@ -130,10 +135,12 @@
       throw error
       }
     }
+  }
 
   stage('Deploy ' + TAG_NAMES[0]) {
     def environment = TAG_NAMES[0]
     def url = APP_URLS[0]
+    node{
       try{
         openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
 
@@ -178,6 +185,7 @@
         echo "Error in DEV"
       }
     }
+  }
 
   // stages {
   //   stage('Deploy ' + TAG_NAMES[1]) {
@@ -250,6 +258,7 @@
     def environment = TAG_NAMES[1]
     def url = APP_URLS[1]
     timeout(time:3, unit: 'DAYS'){ input "Deploy to ${environment}?"}
+    node{
     try{
       openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
         slackNotify(
@@ -270,6 +279,7 @@
 
           }   
           }
+  }
   // stage('Deploy ' + TAG_NAMES[1]){
   //   def environment = TAG_NAMES[1]
   //   def url = APP_URLS[1]
