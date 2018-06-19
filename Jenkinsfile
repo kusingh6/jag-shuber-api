@@ -302,7 +302,10 @@
         ROUT_PATCH = sh(
         script: """oc project production; oc patch -n production route/api --patch '{\"spec\":{\"to\":{\"name\":\"${newTarget}\"}}}'; oc get route api -o template --template='{{ .spec.to.name }}'""")
         echo ">> ROUT_PATCH: ${ROUT_PATCH}"
-  }
+      }catch(error){
+        echo "Failed to switch route"
+        throw error
+      }
   }
   }
 
