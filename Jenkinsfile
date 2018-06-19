@@ -153,8 +153,8 @@
         // verify deployment
         openshiftVerifyDeployment deploymentConfig: IMAGESTREAM_NAME, namespace: environment
         // Check for deployment config for api and postgress in dev environment
-        PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${work_space}/openshift/api-postgres-deploy.json" | oc create -f - """)
-        echo ">> PSTGRESS_IMG: ${PSTGRESS_IMG}"
+        // PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${work_space}/openshift/api-postgres-deploy.json" | oc create -f - """)
+        // echo ">> PSTGRESS_IMG: ${PSTGRESS_IMG}"
         
         slackNotify(
             "New Version in ${environment} 🚀",
