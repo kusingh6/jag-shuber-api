@@ -77,7 +77,7 @@
           echo "Building: " + ARTIFACT_BUILD
           openshiftBuild bldCfg: ARTIFACT_BUILD, showBuildLogs: 'true'
           openshiftVerifyBuild bldCfg: ARTIFACT_BUILD, showBuildLogs: 'true'
-          openshiftVerifyBuild bldCfg: RUNTIME_BUILD, showBuildLogs: 'true'
+          openshiftVerifyBuild bldCfg: RUNTIME_BUILD, showBuildLogs: 'true', waitTime: '200000'
           // Don't tag with BUILD_ID so the pruner can do it's job; it won't delete tagged images.
           // Tag the images for deployment based on the image's hash
           IMAGE_HASH = sh (
