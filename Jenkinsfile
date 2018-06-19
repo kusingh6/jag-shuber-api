@@ -9,7 +9,7 @@
   def TAG_NAMES = [
   'dev', 
   'test', 
-  'prod'
+  'production'
   ]
   def APP_URLS = [
   "https://${APP_NAME}-${PROJECT_PREFIX}-${TAG_NAMES[0]}.${PATHFINDER_URL}",
@@ -310,8 +310,8 @@
       // openshiftTag destStream: {IMAGESTREAM_NAME}-blue, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
 
       // Deploy Image to the environment
-      openshiftDeploy deploymentConfig: "${newTarget}", namespace: 'production'
-      openshiftVerifyDeployment deploymentConfig: "${newTarget}", namespace: 'production'
+      openshiftDeploy deploymentConfig: "${newTarget}", namespace: environment
+      openshiftVerifyDeployment deploymentConfig: "${newTarget}", namespace: environment
       slackNotify(
           "New Version in ${environment} 🚀",
           "A new version of the ${APP_NAME} is now in ${environment}",
