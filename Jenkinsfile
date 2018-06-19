@@ -24,7 +24,7 @@
   def SLACK_DEV_CHANNEL="kulpreet_test"
   def SLACK_MAIN_CHANNEL="kulpreet_test"
   // def scmVars = checkout scm
-  //def workspace = pwd()
+  def work_space = "${WORKSPACE}@script"
 
   def hasRepoChanged = false;
   node{
@@ -58,7 +58,7 @@
           // def apitemplate
           if (!templateExists_ART) { 
             
-            APIBUBUILD_IMG = sh ( """oc process -f "${WORKSPACE}@script/openshift/templates/api-builder/api-builder-build.json" | oc create -f - """)
+            APIBUBUILD_IMG = sh ( """oc process -f "${work_space}/openshift/templates/api-builder/api-builder-build.json" | oc create -f - """)
             echo ">> ${APIBUBUILD_IMG}"
           } else {
             echo "APIBUBUILD_IMG: ${ARTIFACT_BUILD} Template exists"
@@ -67,7 +67,7 @@
           // def apibuildtemplate
           if (!templateExists_RUN) {
             
-            APIBUILD_IMG = sh ( """oc process -f "${WORKSPACE}@script/openshift/templates/api/api-build.json" | oc create -f - """)
+            APIBUILD_IMG = sh ( """oc process -f "${work_space}/openshift/templates/api/api-build.json" | oc create -f - """)
             echo ">> APIBUILD_IMG: ${APIBUILD_IMG}"
           } else {
             echo "${RUNTIME_BUILD} Template exists"
@@ -115,7 +115,7 @@
       try{
         echo "Creating Ephemeral Postgress instance for testing"
         POSTGRESS = sh (
-          script: """oc project tools; oc process -f "${WORKSPACE}@script/openshift/posgress-emphemeral.json" | oc create -f - """)
+          script: """oc project tools; oc process -f "${work_space}/openshift/posgress-emphemeral.json" | oc create -f - """)
           echo ">> POSTGRESS: ${POSTGRESS}" 
         
       } catch(error){
@@ -132,7 +132,7 @@
     try{
       echo "Run Test Case scripts here"
       POSTGRESS_DEL = sh (
-        script: """oc project tools; oc process -f "${WORKSPACE}@script/openshift/posgress-emphemeral.json" | oc delete -f - """)
+        script: """oc project tools; oc process -f "${work_space}/openshift/posgress-emphemeral.json" | oc delete -f - """)
         echo ">> ${POSTGRESS_DEL}"
       echo "postgress instance deleted successfully"
     } catch(error){
@@ -152,7 +152,7 @@
         // verify deployment
         openshiftVerifyDeployment deploymentConfig: IMAGESTREAM_NAME, namespace: environment
         // Check for deployment config for api and postgress in dev environment
-        PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${WORKSPACE}@script/openshift/api-postgres-deploy.json" | oc create -f - """)
+        PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${work_space}/openshift/api-postgres-deploy.json" | oc create -f - """)
         echo ">> PSTGRESS_IMG: ${PSTGRESS_IMG}"
         
         slackNotify(
@@ -252,7 +252,7 @@
       try {
       // Check for current route target
       ROUT_CHK = sh (
-      script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > ${WORKSPACE}/route-target; cat ${WORKSPACE}/route-target""")
+      script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > ${work_space}/route-target; cat ${work_space}/route-target""")
       echo ">> ROUT_CHK: ${ROUT_CHK}"
       // Tag the new build as "prod"
       openshiftTag destStream: "${newTarget}", verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
@@ -322,7 +322,7 @@
   
 // Functions to check currentTarget (api-blue)deployment and mark to for deployment to newTarget(api-green) & vice versa
   def getCurrentTarget() {
-  def currentTarget = readFile "${WORKSPACE}/route-target"
+  def currentTarget = readFile "${work_space}/route-target"
   return currentTarget
   }
 
