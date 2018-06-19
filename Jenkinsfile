@@ -116,7 +116,7 @@
       try{
         echo "Creating Ephemeral Postgress instance for testing"
         POSTGRESS = sh (
-          script: """oc process -f "${WORKSPACE}@script/openshift/posgress-emphemeral.json" | oc create -f - """)
+          script: """oc project tools; oc process -f "${WORKSPACE}@script/openshift/posgress-emphemeral.json" | oc create -f - """)
           echo ">> ${POSTGRESS}" 
         // DBE_STATUS = sh (
         //   script: : """ oc 
@@ -133,9 +133,9 @@
     node{
     try{
       echo "Run Test Case scripts here"
-      // POSTGRESS_DEL = sh (
-      //   script: """oc process -f "${WORKSPACE}@script/openshift/posgress-emphemeral.json" | oc delete -f - """)
-      //   echo ">> ${POSTGRESS_DEL}"
+      POSTGRESS_DEL = sh (
+        script: """oc project tools; oc process -f "${WORKSPACE}@script/openshift/posgress-emphemeral.json" | oc delete -f - """)
+        echo ">> ${POSTGRESS_DEL}"
       echo "postgress instance deleted successfully"
     } catch(error){
       echo "Error while test cases are running"
@@ -287,29 +287,69 @@
           }   
           }
   }
-  // stage('Deploy ' + TAG_NAMES[1]){
-  //   def environment = TAG_NAMES[1]
-  //   def url = APP_URLS[1]
-  //   timeout(time:3, unit: 'DAYS'){ input "Deploy to ${environment}?"}
-  //   node{
-  //     openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
-  //     slackNotify(
-  //         "New Version in ${environment} 🚀",
-  //         "A new version of the ${APP_NAME} is now in ${environment}",
-  //         'good',
-  //         env.SLACK_HOOK,
-  //         SLACK_MAIN_CHANNEL,
-  //         [
-  //           [
-  //             type: "button",
-  //             text: "View New Version",           
-  //             url: "${url}"
-  //           ],
-  //         ])
-  //   }  
-  // }
+
+  stage('Prep for Prod') {
+    // Check for current route target
+    ROUTE_CHECK = sh(
+      script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > route-target"""
+    ) 
+    
+    // // Tag the new build as "prod"
+    openshiftTag destStream: ROUTE_CHECK, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
+  }
+
+  // Functions to check currentTarget (api-blue)deployment and mark to for deployment to newTarget(api-green) & vice versa
+  def getCurrentTarget() {
+  def currentTarget = readFile 'route-target'
+  return currentTarget
+  }
+
+  def getNewTarget() {
+  def currentTarget = getCurrentTarget()
+  def newTarget = ""
+  if (currentTarget == 'api-blue') {
+      newTarget = 'api-green'
+  } else if (currentTarget == 'api-green') {
+      newTarget = 'api-blue'
+  } else {
+    echo "OOPS, wrong target"
+  }
+  return newTarget
+}
+
+  stage('Deploy ' + TAG_NAMES[2]){
+    def environment = TAG_NAMES[2]
+    def url = APP_URLS[2]
+    timeout(time:3, unit: 'DAYS'){ input "Deploy to ${environment}?"}
+    node{
+      try {
+      // sh "oc get route tasks -n tasks-prod -o template --template='{{ .spec.to.name }}' > route-target"
+      // openshiftTag destStream: {IMAGESTREAM_NAME}-blue, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
+
+      // Deploy Image to the environment
+      openshiftDeploy deploymentConfig: "${newTarget}", namespace: 'production'
+      openshiftVerifyDeployment deploymentConfig: "${newTarget}", namespace: 'production'
+      slackNotify(
+          "New Version in ${environment} 🚀",
+          "A new version of the ${APP_NAME} is now in ${environment}",
+          'good',
+          env.SLACK_HOOK,
+          SLACK_MAIN_CHANNEL,
+          [
+            [
+              type: "button",
+              text: "View New Version",           
+              url: "${url}"
+            ],
+          ])
+    }catch(error){
+      echo "Error in deployment"
+    }
+  }
+  }
   // }else{
   //   stage('No Changes to Build 👍'){
   //     currentBuild.result = 'SUCCESS'
   //   }
+  // }
   
