@@ -86,20 +86,20 @@
 
         }catch(error){
           echo "Error in Build"
-          // slackNotify(
-          //   'Build Broken 🤕',
-          //   "The latest ${APP_NAME} build seems to have broken\n'${error.message}'",
-        //   'danger',
-        //   env.SLACK_HOOK,
-        //   SLACK_DEV_CHANNEL,
-        //   [
-        //     [
-        //       type: "button",
-        //       text: "View Build Logs",
-        //       style:"danger",           
-        //       url: "${currentBuild.absoluteUrl}/console"
-        //     ]
-        //   ])
+          slackNotify(
+            'Build Broken 🤕',
+            "The latest ${APP_NAME} build seems to have broken\n'${error.message}'",
+          'danger',
+          env.SLACK_HOOK,
+          SLACK_DEV_CHANNEL,
+          [
+            [
+              type: "button",
+              text: "View Build Logs",
+              style:"danger",           
+              url: "${currentBuild.absoluteUrl}/console"
+            ]
+          ])
         throw error
         }
       }
@@ -123,6 +123,7 @@
     }
   }
 
+
   //Running functional Test cases - in tools project
   stage('Run Test Cases'){
     node{
@@ -139,6 +140,7 @@
     }
   }
 
+  // Deploying to Dev
   stage('Deploy ' + TAG_NAMES[0]) {
     def environment = TAG_NAMES[0]
     def url = APP_URLS[0]
@@ -150,112 +152,46 @@
         PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${WORKSPACE}@script/openshift/api-postgres-deploy.json" | oc create -f - """)
         echo ">> PSTGRESS_IMG: ${PSTGRESS_IMG}"
         
-        // slackNotify(
-        //     "New Version in ${environment} 🚀",
-        //     "A new version of the ${APP_NAME} is now in ${environment}",
-        //     'good',
-        //     env.SLACK_HOOK,
-        //     SLACK_MAIN_CHANNEL,
-        //     [
-        //       [
-        //         type: "button",
-        //         text: "View New Version",         
-        //         url: "${url}"
-        //       ],
-        //       [
-        //         type: "button",            
-        //         text: "Deploy to Test?",
-        //         style: "primary",              
-        //         url: "${currentBuild.absoluteUrl}/input"
-        //       ]
-        //     ])
+        slackNotify(
+            "New Version in ${environment} 🚀",
+            "A new version of the ${APP_NAME} is now in ${environment}",
+            'good',
+            env.SLACK_HOOK,
+            SLACK_MAIN_CHANNEL,
+            [
+              [
+                type: "button",
+                text: "View New Version",         
+                url: "${url}"
+              ],
+              [
+                type: "button",            
+                text: "Deploy to Test?",
+                style: "primary",              
+                url: "${currentBuild.absoluteUrl}/input"
+              ]
+            ])
       }catch(error){
-        // slackNotify(
-        //   "Couldn't deploy to ${environment} 🤕",
-        //   "The latest deployment of the ${APP_NAME} to ${environment} seems to have failed\n'${error.message}'",
-        //   'danger',
-        //   env.SLACK_HOOK,
-        //   SLACK_DEV_CHANNEL,
-        //   [
-        //     [
-        //       type: "button",
-        //       text: "View Build Logs",
-        //       style:"danger",        
-        //       url: "${currentBuild.absoluteUrl}/console"
-        //     ]
-        //   ])
+        slackNotify(
+          "Couldn't deploy to ${environment} 🤕",
+          "The latest deployment of the ${APP_NAME} to ${environment} seems to have failed\n'${error.message}'",
+          'danger',
+          env.SLACK_HOOK,
+          SLACK_DEV_CHANNEL,
+          [
+            [
+              type: "button",
+              text: "View Build Logs",
+              style:"danger",        
+              url: "${currentBuild.absoluteUrl}/console"
+            ]
+          ])
         echo "Error in DEV"
       }
     }
   }
 
-  // stages {
-  //   stage('Deploy ' + TAG_NAMES[1]) {
-  //     def environment = TAG_NAMES[1]
-  //     def url = APP_URLS[1]
-  //     timeout(time:3, unit: 'DAYS'){ input "Deploy to ${environment}?"}
-  //     parallel {
-  //       stage('Deploy Shuber Api') {
-  //         steps{
-  //           // Check for deployment config for api and postgress in dev environment
-  //           PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${WORKSPACE}@script/openshift/api-postgres-deploy.json" | oc create -f - """)
-  //           echo ">> ${PSTGRESS_IMG}"
-
-  //           // Push image changes to Test
-  //           openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
-  //         }
-  //         post {
-  //           success {
-  //             slackNotify(
-  //               "New Version in ${environment} 🚀",
-  //               "A new version of the ${APP_NAME} is now in ${environment}",
-  //             'good',
-  //             env.SLACK_HOOK,
-  //             SLACK_MAIN_CHANNEL,
-  //               [
-  //                 [
-  //                   type: "button",
-  //                   text: "View New Version",           
-  //                   url: "${url}"
-  //                 ],
-  //               ])
-  //           }
-  //           failure {
-  //             slackNotify(
-  //               "Couldn't deploy to ${environment} 🤕",
-  //               "The latest deployment of the ${APP_NAME} to ${environment} seems to have failed\n'${error.message}'",
-  //               'danger',
-  //               env.SLACK_HOOK,
-  //               SLACK_DEV_CHANNEL,
-  //               [
-  //                 [
-  //                   type: "button",
-  //                   text: "View Build Logs",
-  //                   style:"danger",        
-  //                   url: "${currentBuild.absoluteUrl}/console"
-  //                 ]
-  //               ])
-  //             }
-  //           }
-  //         }
-  //       }
-  //       stage('Running integration testing') {
-  //         steps {
-  //           echo " Run test cases here"
-  //         }
-  //         post {
-  //           success {
-  //             echo " Test cleared 🚀"
-  //           }
-  //           failure {
-  //             echo "Test failure alert!! couldn't cleared 🤕"
-  //           }
-  //         }
-  //       }
-  //     }
-
-  //   }
-  
+  //Deploying in stable Test
   stage('Deploy ' + TAG_NAMES[1]){
     def environment = TAG_NAMES[1]
     def url = APP_URLS[1]
@@ -275,30 +211,34 @@
                 text: "View New Version",           
                 url: "${url}"
               ],
+              [
+                type: "button",            
+                text: "Deploy to Production?",
+                style: "primary",              
+                url: "${currentBuild.absoluteUrl}/input"
+              ]
             ])
           } catch(error){
+            slackNotify(
+              "Couldn't deploy to ${environment} 🤕",
+              "The latest deployment of the ${APP_NAME} to ${environment} seems to have failed\n'${error.message}'",
+              'danger',
+            env.SLACK_HOOK,
+            SLACK_DEV_CHANNEL,
+            [
+              [
+                type: "button",
+                text: "View Build Logs",
+                style:"danger",        
+                url: "${currentBuild.absoluteUrl}/console"
+              ]
+            ])
             echo "Build failed"
-
-          }   
+            }   
           }
-  }
+      }
 
-  // stage('Prep for Prod') {
-  //   node{
-  //     try{
-  //   // Tag the new build as "prod"
-  //   openshiftTag destStream: ROUTE_CHECK, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
-  //   // Check for current route target
-  //   ROUT_CHK = sh (
-  //     script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > ${WORKSPACE}/route-target""")
-  //     echo ">> ${ROUT_CHK}" 
-  // }catch(error){
-  //   echo "Error while cheking route and tagging image for production"
-  //   throw error
-  //   }
-  //   }
-  // }
-
+  // Deploying to production
   stage('Deploy ' + TAG_NAMES[2]){
     def environment = TAG_NAMES[2]
     def url = APP_URLS[2]
@@ -318,27 +258,50 @@
       slackNotify(
           "New Version in ${environment} 🚀",
           "A new version of the ${APP_NAME} is now in ${environment}",
-          'good',
-          )
+          'To switch to new version',
+          env.SLACK_HOOK,
+          SLACK_MAIN_CHANNEL,
+            [
+              [
+                type: "button",            
+                text: "Deploy to Production?",
+                style: "primary",              
+                url: "${currentBuild.absoluteUrl}/input"
+              ]
+            ])
     }catch(error){
-      echo "Error in deployment"
+      slackNotify(
+              "Couldn't deploy to ${environment} 🤕",
+              "The latest deployment of the ${APP_NAME} to ${environment} seems to have failed\n'${error.message}'",
+              'danger',
+            env.SLACK_HOOK,
+            SLACK_DEV_CHANNEL,
+            [
+              [
+                type: "button",
+                text: "View Build Logs",
+                style:"danger",        
+                url: "${currentBuild.absoluteUrl}/console"
+              ]
+            ])
+            echo "Build failed"
     }
   }
   }
 
   // Once approved (input step) switch production over to the new version.
   stage('Switch over to new Version') {
-    node{
     def newTarget = getNewTarget()
     def currentTarget = getCurrentTarget()
-
     // Wait for administrator confirmation
-    input "Switch Production from ${currentTarget} to ${newTarget} ?"
-
-    // Switch blue/green
-    ROUT_PATCH = sh(
-      script: """oc project production; oc patch -n production route/api --patch '{\"spec\":{\"to\":{\"name\":\"${newTarget}\"}}}'; oc get route api -o template --template='{{ .spec.to.name }}'""")
-      echo ">> ROUT_PATCH: ${ROUT_PATCH}"
+    timeout(time:3, unit: 'DAYS'){ input "Switch Production from ${currentTarget} to ${newTarget} ?"}
+    node{
+      try{
+        
+        // Switch blue/green
+        ROUT_PATCH = sh(
+        script: """oc project production; oc patch -n production route/api --patch '{\"spec\":{\"to\":{\"name\":\"${newTarget}\"}}}'; oc get route api -o template --template='{{ .spec.to.name }}'""")
+        echo ">> ROUT_PATCH: ${ROUT_PATCH}"
   }
   }
 

@@ -120,7 +120,7 @@
             "name": "GIT_URL",
             "displayName": "Git Repository URL",
             "required": true,
-            "description": "The URL of the repository with your application source code.",
+            "description": "The URL of the repository with your application sourcecode.",
             "value": "https://github.com/kusingh6/jag-shuber-api.git"
         },
         {

@@ -736,21 +736,21 @@
             "name": "API_MEMORY_LIMIT",
             "displayName": "API Memory Limit",
             "description": "Maximum amount of memory the API container can use.",
-            "value": "512Mi",
+            "value": "300Mi",
             "required": true
         },
         {
             "name": "API_CPU_LIMIT",
             "displayName": "API CPU Limit",
             "description": "Maximum amount of CPU the API container can use.",
-            "value": "500m",
+            "value": "100m",
             "required": false
         },
         {
             "name": "DATABASE_MEMORY_LIMIT",
             "displayName": "Database Memory Limit",
             "description": "Maximum amount of memory the Database container can use.",
-            "value": "1Gi",
+            "value": "400Mi",
             "required": true
         },
         {
