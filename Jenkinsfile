@@ -57,18 +57,18 @@
 
           // def apitemplate
           if (!templateExists_ART) { 
-            // apitemplate = openshift.create( openshift.process("${WORKSPACE}@script/openshift/templates/api/api-build.json") ).object()
-            APIBBUILD_IMG = sh ( """oc process -f "${WORKSPACE}@script/openshift/templates/api-builder/api-builder-build.json" | oc create -f - """)
-            echo ">> ${APIBBUILD_IMG}"
+            
+            APIBUBUILD_IMG = sh ( """oc process -f "${WORKSPACE}@script/openshift/templates/api-builder/api-builder-build.json" | oc create -f - """)
+            echo ">> ${APIBUBUILD_IMG}"
           } else {
-            echo "${ARTIFACT_BUILD} Template exists"
+            echo "APIBUBUILD_IMG: ${ARTIFACT_BUILD} Template exists"
           }
         
           // def apibuildtemplate
           if (!templateExists_RUN) {
-            // apibuildtemplate = openshift.create( openshift.process("${WORKSPACE}@script/openshift/templates/api-builder/api-builder-build.json") ).object()
+            
             APIBUILD_IMG = sh ( """oc process -f "${WORKSPACE}@script/openshift/templates/api/api-build.json" | oc create -f - """)
-            echo ">> ${APIBUILD_IMG}"
+            echo ">> APIBUILD_IMG: ${APIBUILD_IMG}"
           } else {
             echo "${RUNTIME_BUILD} Template exists"
             }
@@ -76,10 +76,7 @@
         try{
           echo "Building: " + ARTIFACT_BUILD
           openshiftBuild bldCfg: ARTIFACT_BUILD, showBuildLogs: 'true'
-          // def STATUS = sh (
-          //   script: """sleep 60; oc logs -f bc/${RUNTIME_BUILD}"""
-          // )
-        
+          
           // Don't tag with BUILD_ID so the pruner can do it's job; it won't delete tagged images.
           // Tag the images for deployment based on the image's hash
           IMAGE_HASH = sh (
@@ -117,10 +114,8 @@
         echo "Creating Ephemeral Postgress instance for testing"
         POSTGRESS = sh (
           script: """oc project tools; oc process -f "${WORKSPACE}@script/openshift/posgress-emphemeral.json" | oc create -f - """)
-          echo ">> ${POSTGRESS}" 
-        // DBE_STATUS = sh (
-        //   script: : """ oc 
-        // )
+          echo ">> POSTGRESS: ${POSTGRESS}" 
+        
       } catch(error){
         echo "Error in creating postgress instance"
         throw error
@@ -153,7 +148,7 @@
 
         // Check for deployment config for api and postgress in dev environment
         PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${WORKSPACE}@script/openshift/api-postgres-deploy.json" | oc create -f - """)
-        echo ">> ${PSTGRESS_IMG}"
+        echo ">> PSTGRESS_IMG: ${PSTGRESS_IMG}"
         
         // slackNotify(
         //     "New Version in ${environment} 🚀",
@@ -312,8 +307,8 @@
       try {
       // Check for current route target
       ROUT_CHK = sh (
-      script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > ${WORKSPACE}/route-target""")
-      echo ">> ${ROUT_CHK}"
+      script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > ${WORKSPACE}/route-target; cat ${WORKSPACE}/route-target""")
+      echo ">> ROUT_CHK: ${ROUT_CHK}"
       // Tag the new build as "prod"
       openshiftTag destStream: "${newTarget}", verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
 
@@ -324,20 +319,29 @@
           "New Version in ${environment} 🚀",
           "A new version of the ${APP_NAME} is now in ${environment}",
           'good',
-          env.SLACK_HOOK,
-          SLACK_MAIN_CHANNEL,
-          [
-            [
-              type: "button",
-              text: "View New Version",           
-              url: "${url}"
-            ],
-          ])
+          )
     }catch(error){
       echo "Error in deployment"
     }
   }
   }
+
+  // Once approved (input step) switch production over to the new version.
+  stage('Switch over to new Version') {
+    node{
+    def newTarget = getNewTarget()
+    def currentTarget = getCurrentTarget()
+
+    // Wait for administrator confirmation
+    input "Switch Production from ${currentTarget} to ${newTarget} ?"
+
+    // Switch blue/green
+    ROUT_PATCH = sh(
+      script: """oc project production; oc patch -n production route/api --patch '{\"spec\":{\"to\":{\"name\":\"${newTarget}\"}}}'; oc get route api -o template --template='{{ .spec.to.name }}'""")
+      echo ">> ROUT_PATCH: ${ROUT_PATCH}"
+  }
+  }
+
   // }else{
   //   stage('No Changes to Build 👍'){
   //     currentBuild.result = 'SUCCESS'
