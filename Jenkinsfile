@@ -290,14 +290,18 @@
 
   stage('Prep for Prod') {
     node{
-
+      try{
     // Tag the new build as "prod"
     openshiftTag destStream: ROUTE_CHECK, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
     // Check for current route target
-    ROUTE_CHECK = sh(
-      script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > ${WORKSPACE}/route-target"""
-    ) 
-  }
+    ROUTE_CHECK = sh (
+      script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > ${WORKSPACE}/route-target""")
+      echo ">> ${ROUTE_CHECK}" 
+  }catch(error){
+    echo "Error while cheking route and tagging image for production"
+    throw error
+    }
+    }
   }
 
   stage('Deploy ' + TAG_NAMES[2]){
