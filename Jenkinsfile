@@ -247,7 +247,7 @@
       try {
       // Check for current route target
       ROUT_CHK = sh (
-      script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > ${WORKSPACE}/route-target; cat ${WORKSPACE}/route-target""")
+      script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > ./route-target; cat ./route-target""")
       echo ">> ROUT_CHK: ${ROUT_CHK}"
       // Tag the new build as "prod"
       openshiftTag destStream: "${newTarget}", verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
@@ -317,7 +317,7 @@
   
 // Functions to check currentTarget (api-blue)deployment and mark to for deployment to newTarget(api-green) & vice versa
   def getCurrentTarget() {
-  def currentTarget = readFile "${WORKSPACE}/route-target"
+  def currentTarget = readFile "./route-target"
   return currentTarget
   }
 
