@@ -25,6 +25,7 @@
   def SLACK_MAIN_CHANNEL="kulpreet_test"
   // def scmVars = checkout scm
   def work_space = "/var/lib/jenkins/jobs/tools/jobs/tools-shuber-api-pipeline/workspace@script"
+  return work_space
 
   def hasRepoChanged = false;
   node{
@@ -81,7 +82,7 @@
           // Don't tag with BUILD_ID so the pruner can do it's job; it won't delete tagged images.
           // Tag the images for deployment based on the image's hash
           IMAGE_HASH = sh (
-          script: """ sleep 120; oc get istag ${RUNTIME_BUILD}:latest | grep sha256: | awk -F "sha256:" '{print \$3 }'""",
+          script: """oc get istag ${RUNTIME_BUILD}:latest | grep sha256: | awk -F "sha256:" '{print \$3 }'""",
           returnStdout: true).trim()
           echo ">> IMAGE_HASH: ${IMAGE_HASH}"
           // if ( IMAGE_HASH:
@@ -253,7 +254,7 @@
       // Check for current route target
       ROUT_CHK = sh (
       script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > ${work_space}/route-target; cat ${work_space}/route-target""")
-      echo ">> ROUT_CHK: ${ROUT_CHK}"
+      // echo ">> ROUT_CHK: ${ROUT_CHK}"
       // Tag the new build as "prod"
       openshiftTag destStream: "${newTarget}", verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
 
