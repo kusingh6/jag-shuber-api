@@ -84,7 +84,7 @@
           script: """ sleep 120; oc get istag ${RUNTIME_BUILD}:latest | grep sha256: | awk -F "sha256:" '{print \$3 }'""",
           returnStdout: true).trim()
           echo ">> IMAGE_HASH: ${IMAGE_HASH}"
-          if ( IMAGE_HASH:
+          // if ( IMAGE_HASH:
 
         }catch(error){
           echo "Error in Build"
