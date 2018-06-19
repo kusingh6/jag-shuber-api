@@ -289,18 +289,20 @@
   }
 
   stage('Prep for Prod') {
+    node{
     // Check for current route target
     ROUTE_CHECK = sh(
-      script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > route-target"""
+      script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > ${WORKSPACE}/route-target"""
     ) 
     
     // // Tag the new build as "prod"
     openshiftTag destStream: ROUTE_CHECK, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
   }
+  }
 
   // Functions to check currentTarget (api-blue)deployment and mark to for deployment to newTarget(api-green) & vice versa
   def getCurrentTarget() {
-  def currentTarget = readFile 'route-target'
+  def currentTarget = readFile "${WORKSPACE}/route-target"
   return currentTarget
   }
 
