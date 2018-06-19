@@ -76,13 +76,15 @@
         try{
           echo "Building: " + ARTIFACT_BUILD
           openshiftBuild bldCfg: ARTIFACT_BUILD, showBuildLogs: 'true'
-          
+          openshiftVerifyBuild bldCfg: ARTIFACT_BUILD, showBuildLogs: 'true'
+          openshiftVerifyBuild bldCfg: RUNTIME_BUILD, showBuildLogs: 'true'
           // Don't tag with BUILD_ID so the pruner can do it's job; it won't delete tagged images.
           // Tag the images for deployment based on the image's hash
           IMAGE_HASH = sh (
           script: """ sleep 120; oc get istag ${RUNTIME_BUILD}:latest | grep sha256: | awk -F "sha256:" '{print \$3 }'""",
           returnStdout: true).trim()
           echo ">> IMAGE_HASH: ${IMAGE_HASH}"
+          if ( IMAGE_HASH:
 
         }catch(error){
           echo "Error in Build"
@@ -147,7 +149,8 @@
     node{
       try{
         openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
-
+        // verify deployment
+        openshiftVerifyDeployment deploymentConfig: IMAGESTREAM_NAME, namespace: environment
         // Check for deployment config for api and postgress in dev environment
         PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${WORKSPACE}@script/openshift/api-postgres-deploy.json" | oc create -f - """)
         echo ">> PSTGRESS_IMG: ${PSTGRESS_IMG}"
@@ -199,30 +202,32 @@
     node{
     try{
       openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
-        slackNotify(
-          "New Version in ${environment} 🚀",
-          "A new version of the ${APP_NAME} is now in ${environment}",
-          'good',
-          env.SLACK_HOOK,
-          SLACK_MAIN_CHANNEL,
+      // verify deployment
+      openshiftVerifyDeployment deploymentConfig: IMAGESTREAM_NAME, namespace: environment
+      slackNotify(
+        "New Version in ${environment} 🚀",
+        "A new version of the ${APP_NAME} is now in ${environment}",
+        'good',
+        env.SLACK_HOOK,
+        SLACK_MAIN_CHANNEL,
+          [
             [
-              [
-                type: "button",
-                text: "View New Version",           
-                url: "${url}"
-              ],
-              [
-                type: "button",            
-                text: "Deploy to Production?",
-                style: "primary",              
-                url: "${currentBuild.absoluteUrl}/input"
-              ]
-            ])
-          } catch(error){
-            slackNotify(
-              "Couldn't deploy to ${environment} 🤕",
-              "The latest deployment of the ${APP_NAME} to ${environment} seems to have failed\n'${error.message}'",
-              'danger',
+              type: "button",
+              text: "View New Version",           
+              url: "${url}"
+            ],
+            [
+              type: "button",            
+              text: "Deploy to Production?",
+              style: "primary",              
+              url: "${currentBuild.absoluteUrl}/input"
+            ]
+          ])
+        } catch(error){
+          slackNotify(
+            "Couldn't deploy to ${environment} 🤕",
+            "The latest deployment of the ${APP_NAME} to ${environment} seems to have failed\n'${error.message}'",
+            'danger',
             env.SLACK_HOOK,
             SLACK_DEV_CHANNEL,
             [
@@ -247,7 +252,7 @@
       try {
       // Check for current route target
       ROUT_CHK = sh (
-      script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > ./route-target; cat ./route-target""")
+      script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > ${WORKSPACE}/route-target; cat ${WORKSPACE}/route-target""")
       echo ">> ROUT_CHK: ${ROUT_CHK}"
       // Tag the new build as "prod"
       openshiftTag destStream: "${newTarget}", verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
@@ -317,7 +322,7 @@
   
 // Functions to check currentTarget (api-blue)deployment and mark to for deployment to newTarget(api-green) & vice versa
   def getCurrentTarget() {
-  def currentTarget = readFile "./route-target"
+  def currentTarget = readFile "${WORKSPACE}/route-target"
   return currentTarget
   }
 
