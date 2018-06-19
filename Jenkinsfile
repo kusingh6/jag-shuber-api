@@ -300,25 +300,6 @@
   }
   }
 
-  // Functions to check currentTarget (api-blue)deployment and mark to for deployment to newTarget(api-green) & vice versa
-  def getCurrentTarget() {
-  def currentTarget = readFile "${WORKSPACE}/route-target"
-  return currentTarget
-  }
-
-  def getNewTarget() {
-  def currentTarget = getCurrentTarget()
-  def newTarget = ""
-  if (currentTarget == 'api-blue') {
-      newTarget = 'api-green'
-  } else if (currentTarget == 'api-green') {
-      newTarget = 'api-blue'
-  } else {
-    echo "OOPS, wrong target"
-  }
-  return newTarget
-}
-
   stage('Deploy ' + TAG_NAMES[2]){
     def environment = TAG_NAMES[2]
     def url = APP_URLS[2]
@@ -355,3 +336,21 @@
   //   }
   // }
   
+// Functions to check currentTarget (api-blue)deployment and mark to for deployment to newTarget(api-green) & vice versa
+  def getCurrentTarget() {
+  def currentTarget = readFile "${WORKSPACE}/route-target"
+  return currentTarget
+  }
+
+  def getNewTarget() {
+  def currentTarget = getCurrentTarget()
+  def newTarget = ""
+  if (currentTarget == 'api-blue') {
+      newTarget = 'api-green'
+  } else if (currentTarget == 'api-green') {
+      newTarget = 'api-blue'
+  } else {
+    echo "OOPS, wrong target"
+  }
+  return newTarget
+}
