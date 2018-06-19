@@ -288,21 +288,21 @@
           }
   }
 
-  stage('Prep for Prod') {
-    node{
-      try{
-    // Tag the new build as "prod"
-    openshiftTag destStream: ROUTE_CHECK, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
-    // Check for current route target
-    ROUT_CHK = sh (
-      script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > ${WORKSPACE}/route-target""")
-      echo ">> ${ROUT_CHK}" 
-  }catch(error){
-    echo "Error while cheking route and tagging image for production"
-    throw error
-    }
-    }
-  }
+  // stage('Prep for Prod') {
+  //   node{
+  //     try{
+  //   // Tag the new build as "prod"
+  //   openshiftTag destStream: ROUTE_CHECK, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
+  //   // Check for current route target
+  //   ROUT_CHK = sh (
+  //     script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > ${WORKSPACE}/route-target""")
+  //     echo ">> ${ROUT_CHK}" 
+  // }catch(error){
+  //   echo "Error while cheking route and tagging image for production"
+  //   throw error
+  //   }
+  //   }
+  // }
 
   stage('Deploy ' + TAG_NAMES[2]){
     def environment = TAG_NAMES[2]
@@ -310,8 +310,12 @@
     timeout(time:3, unit: 'DAYS'){ input "Deploy to ${environment}?"}
     node{
       try {
-      // sh "oc get route tasks -n tasks-prod -o template --template='{{ .spec.to.name }}' > route-target"
-      // openshiftTag destStream: {IMAGESTREAM_NAME}-blue, verbose: 'true', destTag: environment, srcStream: IMAGESTREAM_NAME, srcTag: "${IMAGE_HASH}"
+      // Check for current route target
+      ROUT_CHK = sh (
+      script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > ${WORKSPACE}/route-target""")
+      echo ">> ${ROUT_CHK}"
+      // Tag the new build as "prod"
+      openshiftTag destStream: "${newTarget}", verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
 
       // Deploy Image to the environment
       openshiftDeploy deploymentConfig: "${newTarget}", namespace: environment
