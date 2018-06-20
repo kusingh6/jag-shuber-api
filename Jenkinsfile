@@ -24,7 +24,7 @@
   def SLACK_DEV_CHANNEL="kulpreet_test"
   def SLACK_MAIN_CHANNEL="kulpreet_test"
   // def scmVars = checkout scm
-  // def work_space = "/var/lib/jenkins/jobs/jag-shuber-tools/jobs/jag-shuber-tools-shuber-api-pipeline/workspace@script"
+  def work_space = "/var/lib/jenkins/jobs/jag-shuber-tools/jobs/jag-shuber-tools-shuber-api-pipeline/workspace@script"
   //def workspace = pwd()
 
 node() {
@@ -60,7 +60,7 @@ node() {
           // def apitemplate
           if (!templateExists_ART) { 
             
-            APIBUBUILD_IMG = sh ( """oc process -f "${workspace}@script/openshift/templates/api-builder/api-builder-build.json" | oc create -f - """)
+            APIBUBUILD_IMG = sh ( """oc process -f "${work_space}/openshift/templates/api-builder/api-builder-build.json" | oc create -f - """)
             echo ">> ${APIBUBUILD_IMG}"
           } else {
             echo "APIBUBUILD_IMG: ${ARTIFACT_BUILD} Template exists"
@@ -69,7 +69,7 @@ node() {
           // def apibuildtemplate
           if (!templateExists_RUN) {
             
-            APIBUILD_IMG = sh ( """oc process -f "${workspace}@script/openshift/templates/api/api-build.json" | oc create -f - """)
+            APIBUILD_IMG = sh ( """oc process -f "${work_space}/openshift/templates/api/api-build.json" | oc create -f - """)
             echo ">> APIBUILD_IMG: ${APIBUILD_IMG}"
           } else {
             echo "${RUNTIME_BUILD} Template exists"
@@ -117,7 +117,7 @@ node() {
       try{
         echo "Creating Ephemeral Postgress instance for testing"
         POSTGRESS = sh (
-          script: """oc project jag-shuber-tools; oc process -f "${workspace}@script/openshift/posgress-emphemeral.json" | oc create -f - """)
+          script: """oc project jag-shuber-tools; oc process -f "${work_space}/openshift/posgress-emphemeral.json" | oc create -f - """)
           echo ">> POSTGRESS: ${POSTGRESS}" 
         
       } catch(error){
@@ -134,7 +134,7 @@ node() {
     try{
       echo "Run Test Case scripts here"
       POSTGRESS_DEL = sh (
-        script: """oc project jag-shuber-tools; oc process -f "${workspace}@script/openshift/posgress-emphemeral.json" | oc delete -f - """)
+        script: """oc project jag-shuber-tools; oc process -f "${work_space}/openshift/posgress-emphemeral.json" | oc delete -f - """)
         echo ">> ${POSTGRESS_DEL}"
       echo "postgress instance deleted successfully"
     } catch(error){
