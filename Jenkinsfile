@@ -250,6 +250,26 @@
     def url = APP_URLS[2]
     timeout(time:3, unit: 'DAYS'){ input "Deploy to ${environment}?"}
     node{
+
+      // Functions to check currentTarget (api-blue)deployment and mark to for deployment to newTarget(api-green) & vice versa
+      def getCurrentTarget() {
+      def currentTarget = readFile 'route-target'
+      return currentTarget
+      }
+
+      def getNewTarget() {
+      def currentTarget = getCurrentTarget()
+      def newTarget = ""
+      if (currentTarget == 'api-blue') {
+        newTarget = 'api-green'
+      } else if (currentTarget == 'api-green') {
+        newTarget = 'api-blue'
+      } else {
+      echo "OOPS, wrong target"
+      }
+      return newTarget
+      }
+      
       try {
       // Check for current route target
       ROUT_CHK = sh (
@@ -321,21 +341,21 @@
   //   }
   // }
   
-// Functions to check currentTarget (api-blue)deployment and mark to for deployment to newTarget(api-green) & vice versa
-  def getCurrentTarget() {
-  def currentTarget = readFile 'route-target'
-  return currentTarget
-  }
+// // Functions to check currentTarget (api-blue)deployment and mark to for deployment to newTarget(api-green) & vice versa
+//   def getCurrentTarget() {
+//   def currentTarget = readFile 'route-target'
+//   return currentTarget
+//   }
 
-  def getNewTarget() {
-  def currentTarget = getCurrentTarget()
-  def newTarget = ""
-  if (currentTarget == 'api-blue') {
-      newTarget = 'api-green'
-  } else if (currentTarget == 'api-green') {
-      newTarget = 'api-blue'
-  } else {
-    echo "OOPS, wrong target"
-  }
-  return newTarget
-  }
+//   def getNewTarget() {
+//   def currentTarget = getCurrentTarget()
+//   def newTarget = ""
+//   if (currentTarget == 'api-blue') {
+//       newTarget = 'api-green'
+//   } else if (currentTarget == 'api-green') {
+//       newTarget = 'api-blue'
+//   } else {
+//     echo "OOPS, wrong target"
+//   }
+//   return newTarget
+//   }
