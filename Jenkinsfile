@@ -25,7 +25,7 @@
   def SLACK_MAIN_CHANNEL="kulpreet_test"
   // def scmVars = checkout scm
   // def work_space = "/var/lib/jenkins/jobs/jag-shuber-tools/jobs/jag-shuber-tools-shuber-api-pipeline/workspace@script"
-  def workspace = pwd()
+  //def workspace = pwd()
 
 node() {
   def hasRepoChanged = false;
