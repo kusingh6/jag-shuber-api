@@ -7,9 +7,9 @@
   def PROJECT_PREFIX = "shuber"
   // Edit your environment TAG names below
   def TAG_NAMES = [
-  'dev', 
-  'test', 
-  'production'
+  'jag-shuber-dev', 
+  'jag-shuber-test', 
+  'jag-shuber-prod'
   ]
   def APP_URLS = [
   "https://${APP_NAME}-${PROJECT_PREFIX}-${TAG_NAMES[0]}.${PATHFINDER_URL}",
@@ -253,7 +253,7 @@
       try {
       // Check for current route target
       ROUT_CHK = sh (
-      script: """oc project production; oc get route api -o template --template='{{ .spec.to.name }}' > ${work_space}/route-target; cat ${work_space}/route-target""")
+      script: """oc project jag-shuber-prod; oc get route api -o template --template='{{ .spec.to.name }}' > route-target; cat route-target""")
       // echo ">> ROUT_CHK: ${ROUT_CHK}"
       // Tag the new build as "prod"
       openshiftTag destStream: "${newTarget}", verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
@@ -323,7 +323,7 @@
   
 // Functions to check currentTarget (api-blue)deployment and mark to for deployment to newTarget(api-green) & vice versa
   def getCurrentTarget() {
-  def currentTarget = readFile "${work_space}/route-target"
+  def currentTarget = readFile "route-target"
   return currentTarget
   }
 
