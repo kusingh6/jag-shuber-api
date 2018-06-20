@@ -24,8 +24,8 @@
   def SLACK_DEV_CHANNEL="kulpreet_test"
   def SLACK_MAIN_CHANNEL="kulpreet_test"
   // def scmVars = checkout scm
-  def work_space = "/var/lib/jenkins/jobs/jag-shuber-tools/jobs/jag-shuber-tools-shuber-api-pipeline/workspace@script"
-  // return work_space
+  // def work_space = "/var/lib/jenkins/jobs/jag-shuber-tools/jobs/jag-shuber-tools-shuber-api-pipeline/workspace@script"
+  def workspace = pwd()
 
 node() {
   def hasRepoChanged = false;
@@ -60,7 +60,7 @@ node() {
           // def apitemplate
           if (!templateExists_ART) { 
             
-            APIBUBUILD_IMG = sh ( """oc process -f "${work_space}/openshift/templates/api-builder/api-builder-build.json" | oc create -f - """)
+            APIBUBUILD_IMG = sh ( """oc process -f "${workspace}@script/openshift/templates/api-builder/api-builder-build.json" | oc create -f - """)
             echo ">> ${APIBUBUILD_IMG}"
           } else {
             echo "APIBUBUILD_IMG: ${ARTIFACT_BUILD} Template exists"
@@ -69,7 +69,7 @@ node() {
           // def apibuildtemplate
           if (!templateExists_RUN) {
             
-            APIBUILD_IMG = sh ( """oc process -f "${work_space}/openshift/templates/api/api-build.json" | oc create -f - """)
+            APIBUILD_IMG = sh ( """oc process -f "${workspace}@script/openshift/templates/api/api-build.json" | oc create -f - """)
             echo ">> APIBUILD_IMG: ${APIBUILD_IMG}"
           } else {
             echo "${RUNTIME_BUILD} Template exists"
@@ -77,8 +77,8 @@ node() {
         
         try{
           echo "Building: " + ARTIFACT_BUILD
-          openshiftBuild bldCfg: ARTIFACT_BUILD, showBuildLogs: 'true'
-          openshiftVerifyBuild bldCfg: ARTIFACT_BUILD, showBuildLogs: 'true'
+          openshiftBuild bldCfg: ARTIFACT_BUILD, showBuildLogs: 'true', waitTime: '900000'
+          openshiftVerifyBuild bldCfg: ARTIFACT_BUILD, showBuildLogs: 'true', waitTime: '900000'
           openshiftVerifyBuild bldCfg: RUNTIME_BUILD, showBuildLogs: 'true', waitTime: '900000'
           // Don't tag with BUILD_ID so the pruner can do it's job; it won't delete tagged images.
           // Tag the images for deployment based on the image's hash
@@ -117,7 +117,7 @@ node() {
       try{
         echo "Creating Ephemeral Postgress instance for testing"
         POSTGRESS = sh (
-          script: """oc project jag-shuber-tools; oc process -f "${work_space}/openshift/posgress-emphemeral.json" | oc create -f - """)
+          script: """oc project jag-shuber-tools; oc process -f "${workspace}@script/openshift/posgress-emphemeral.json" | oc create -f - """)
           echo ">> POSTGRESS: ${POSTGRESS}" 
         
       } catch(error){
@@ -134,7 +134,7 @@ node() {
     try{
       echo "Run Test Case scripts here"
       POSTGRESS_DEL = sh (
-        script: """oc project jag-shuber-tools; oc process -f "${work_space}/openshift/posgress-emphemeral.json" | oc delete -f - """)
+        script: """oc project jag-shuber-tools; oc process -f "${workspace}@script/openshift/posgress-emphemeral.json" | oc delete -f - """)
         echo ">> ${POSTGRESS_DEL}"
       echo "postgress instance deleted successfully"
     } catch(error){
@@ -150,9 +150,9 @@ node() {
     def url = APP_URLS[0]
     node{
       try{
-        openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
+        openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}", waitTime: '900000'
         // verify deployment
-        openshiftVerifyDeployment deploymentConfig: IMAGESTREAM_NAME, namespace: environment
+        openshiftVerifyDeployment deploymentConfig: IMAGESTREAM_NAME, namespace: environment, waitTime: '900000'
         // Check for deployment config for api and postgress in dev environment
         // PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${work_space}/openshift/api-postgres-deploy.json" | oc create -f - """)
         // echo ">> PSTGRESS_IMG: ${PSTGRESS_IMG}"
@@ -203,9 +203,9 @@ node() {
     timeout(time:3, unit: 'DAYS'){ input "Deploy to ${environment}?"}
     node{
     try{
-      openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
+      openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}", waitTime: '900000'
       // verify deployment
-      openshiftVerifyDeployment deploymentConfig: IMAGESTREAM_NAME, namespace: environment
+      openshiftVerifyDeployment deploymentConfig: IMAGESTREAM_NAME, namespace: environment, waitTime: '900000'
       slackNotify(
         "New Version in ${environment} 🚀",
         "A new version of the ${APP_NAME} is now in ${environment}",
@@ -255,14 +255,14 @@ node() {
       try {
       // Check for current route target
       ROUT_CHK = sh (
-      script: """oc project jag-shuber-prod; oc get route api -o template --template='{{ .spec.to.name }}' > route-target; cat route-target""")
+      script: """oc project jag-shuber-prod; oc get route api -o template --template='{{ .spec.to.name }}' > ${workspace}/route-target; cat ${workspace}/route-target""")
       // echo ">> ROUT_CHK: ${ROUT_CHK}"
       // Tag the new build as "prod"
-      openshiftTag destStream: "${newTarget}", verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}"
+      openshiftTag destStream: "${newTarget}", verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}", waitTime: '900000'
 
       // Deploy Image to the environment
-      openshiftDeploy deploymentConfig: "${newTarget}", namespace: environment
-      openshiftVerifyDeployment deploymentConfig: "${newTarget}", namespace: environment
+      openshiftDeploy deploymentConfig: "${newTarget}", namespace: environment, waitTime: '900000'
+      openshiftVerifyDeployment deploymentConfig: "${newTarget}", namespace: environment, waitTime: '900000'
       slackNotify(
           "New Version in ${environment} 🚀",
           "A new version of the ${APP_NAME} is now in ${environment}",
@@ -325,7 +325,7 @@ node() {
 }
 // // Functions to check currentTarget (api-blue)deployment and mark to for deployment to newTarget(api-green) & vice versa
   def getCurrentTarget() {
-  def currentTarget = readFile 'route-target'
+  def currentTarget = readFile("${workspace}/route-target")
   return currentTarget
   }
 
