@@ -27,6 +27,7 @@
   def work_space = "/var/lib/jenkins/jobs/jag-shuber-tools/jobs/jag-shuber-tools-shuber-api-pipeline/workspace@script"
   // return work_space
 
+node() {
   def hasRepoChanged = false;
   node{
   def lastCommit = getLastCommit()
@@ -250,25 +251,6 @@
     def url = APP_URLS[2]
     timeout(time:3, unit: 'DAYS'){ input "Deploy to ${environment}?"}
     node{
-
-      // Functions to check currentTarget (api-blue)deployment and mark to for deployment to newTarget(api-green) & vice versa
-      def getCurrentTarget() {
-      def currentTarget = readFile 'route-target'
-      return currentTarget
-      }
-
-      def getNewTarget() {
-      def currentTarget = getCurrentTarget()
-      def newTarget = ""
-      if (currentTarget == 'api-blue') {
-        newTarget = 'api-green'
-      } else if (currentTarget == 'api-green') {
-        newTarget = 'api-blue'
-      } else {
-      echo "OOPS, wrong target"
-      }
-      return newTarget
-      }
       
       try {
       // Check for current route target
@@ -342,20 +324,21 @@
   // }
   
 // // Functions to check currentTarget (api-blue)deployment and mark to for deployment to newTarget(api-green) & vice versa
-//   def getCurrentTarget() {
-//   def currentTarget = readFile 'route-target'
-//   return currentTarget
-//   }
+  def getCurrentTarget() {
+  def currentTarget = readFile 'route-target'
+  return currentTarget
+  }
 
-//   def getNewTarget() {
-//   def currentTarget = getCurrentTarget()
-//   def newTarget = ""
-//   if (currentTarget == 'api-blue') {
-//       newTarget = 'api-green'
-//   } else if (currentTarget == 'api-green') {
-//       newTarget = 'api-blue'
-//   } else {
-//     echo "OOPS, wrong target"
-//   }
-//   return newTarget
-//   }
+  def getNewTarget() {
+  def currentTarget = getCurrentTarget()
+  def newTarget = ""
+  if (currentTarget == 'api-blue') {
+      newTarget = 'api-green'
+  } else if (currentTarget == 'api-green') {
+      newTarget = 'api-blue'
+  } else {
+    echo "OOPS, wrong target"
+  }
+  return newTarget
+  }
+}
