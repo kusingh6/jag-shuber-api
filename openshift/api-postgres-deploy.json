@@ -10,7 +10,7 @@
             "tags": "database,postgresql"
         }
     },
-    "message": "The following service(s) have been created in your project: ${DATABASE_SERVICE_NAME}.\n\n       Username: ${POSTGRESQL_USER}\n       Password: ${POSTGRESQL_PASSWORD}\n  Database Name: ${POSTGRESQL_DATABASE}\n Connection URL: postgresql://${DATABASE_SERVICE_NAME}:5432/\n\nFor more information about using this template, including OpenShift considerations, see https://github.com/sclorg/postgresql-container/.",
+    "message": "The following service(s) have been created in your project: ${DATABASE_SERVICE_NAME}.\n\n   Username: ${POSTGRESQL_USER}\n       Password: ${POSTGRESQL_PASSWORD}\n  Database Name: ${POSTGRESQL_DATABASE}\n Connection URL: postgresql://${DATABASE_SERVICE_NAME}:5432/\n\nFor more information about using this template, including OpenShift considerations, see https://github.com/sclorg/postgresql-container/.",
     "labels": {
         "template": "shuber-api-template"
     },
@@ -551,14 +551,14 @@
             "name": "API_CPU_LIMIT",
             "displayName": "API CPU Limit",
             "description": "Maximum amount of CPU the API container can use.",
-            "value": "500m",
+            "value": "200m",
             "required": false
         },
         {
             "name": "DATABASE_MEMORY_LIMIT",
             "displayName": "Database Memory Limit",
             "description": "Maximum amount of memory the Database container can use.",
-            "value": "512Mi",
+            "value": "400Mi",
             "required": true
         },
         {
@@ -616,7 +616,7 @@
             "name": "VOLUME_CAPACITY",
             "displayName": "Volume Capacity",
             "description": "Volume space available for data, e.g. 512Mi, 2Gi.",
-            "value": "1Gi",
+            "value": "1024Mi",
             "required": true
         },
         {
