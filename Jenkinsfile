@@ -268,7 +268,7 @@ node() {
       // openshiftVerifyDeployment deploymentConfig: "${newTarget}", namespace: "${PROJECT_PREFIX}"+"-"+environment, waitTime: '900000'
       slackNotify(
           "Current production Image tagged to ${environment}",
-          "To Deploy ${newTarget} stack and with prod tagged image"
+          "To Deploy ${newTarget} stack and with prod tagged image",
           'To switch to new version',
           env.SLACK_HOOK,
           SLACK_MAIN_CHANNEL,
