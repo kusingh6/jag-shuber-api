@@ -14,8 +14,7 @@
     "labels": {
         "template": "shuber-api-template"
     },
-    "objects": [
-        {
+    "objects": [{
             "kind": "Secret",
             "apiVersion": "v1",
             "metadata": {
@@ -43,14 +42,12 @@
                 }
             },
             "spec": {
-                "ports": [
-                    {
-                        "name": "api-port",
-                        "protocol": "TCP",
-                        "port": 8080,
-                        "targetPort": 8080
-                    }
-                ],
+                "ports": [{
+                    "name": "api-port",
+                    "protocol": "TCP",
+                    "port": 8080,
+                    "targetPort": 8080
+                }],
                 "selector": {
                     "app": "${API_SERVICE_NAME}"
                 },
@@ -79,20 +76,19 @@
                     "recreateParams": {
                         "timeoutSeconds": 600,
                         "mid": {
-                            "failurePolicy": "Abort",
+                            "failurePolicy": "Retry",
                             "execNewPod": {
                                 "command": [
                                     "/opt/app-root/src/database/migrate-db.sh"
                                 ],
-                                "env": [
-                                    {
-                                        "name" : "LIQUIBASE_CONTEXTS",
+                                "env": [{
+                                        "name": "LIQUIBASE_CONTEXTS",
                                         "value": "${API_DATA_CONTEXTS}"
-                                    },                              
+                                    },
                                     {
-                                        "name" : "PG_DATABASE",
+                                        "name": "PG_DATABASE",
                                         "value": "${POSTGRESQL_DATABASE}"
-                                    },                                    
+                                    },
                                     {
                                         "name": "PG_ADMIN_PASSWORD",
                                         "valueFrom": {
@@ -136,12 +132,11 @@
                     "resources": {
                         "limits": {
                             "memory": "${API_MEMORY_LIMIT}",
-                            "cpu":"${API_CPU_LIMIT}"
+                            "cpu": "${API_CPU_LIMIT}"
                         }
                     }
                 },
-                "triggers": [
-                    {
+                "triggers": [{
                         "type": "ImageChange",
                         "imageChangeParams": {
                             "automatic": true,
@@ -171,64 +166,59 @@
                         }
                     },
                     "spec": {
-                        "containers": [
-                            {
-                                "name": "${API_SERVICE_NAME}",
-                                "image": " ",
-                                "ports": [
-                                    {
-                                        "containerPort": 8080,
-                                        "protocol": "TCP"
-                                    }
-                                ],
-                                "env": [
-                                    {
-                                        "name": "API_DATABASE_SCHEMA",
-                                        "value": "${API_DATABASE_SCHEMA}"
-                                    },
-                                    {
-                                        "name": "PGHOST",
-                                        "value": "${DATABASE_SERVICE_NAME}"
-                                    },
-                                    {
-                                        "name": "PGUSER",
-                                        "valueFrom": {
-                                            "secretKeyRef": {
-                                                "name": "${API_SERVICE_NAME}",
-                                                "key": "api-user"
-                                            }
+                        "containers": [{
+                            "name": "${API_SERVICE_NAME}",
+                            "image": " ",
+                            "ports": [{
+                                "containerPort": 8080,
+                                "protocol": "TCP"
+                            }],
+                            "env": [{
+                                    "name": "API_DATABASE_SCHEMA",
+                                    "value": "${API_DATABASE_SCHEMA}"
+                                },
+                                {
+                                    "name": "PGHOST",
+                                    "value": "${DATABASE_SERVICE_NAME}"
+                                },
+                                {
+                                    "name": "PGUSER",
+                                    "valueFrom": {
+                                        "secretKeyRef": {
+                                            "name": "${API_SERVICE_NAME}",
+                                            "key": "api-user"
                                         }
-                                    },
-                                    {
-                                        "name": "PGPASSWORD",
-                                        "valueFrom": {
-                                            "secretKeyRef": {
-                                                "name": "${API_SERVICE_NAME}",
-                                                "key": "api-password"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "name": "PGDATABASE",
-                                        "valueFrom": {
-                                            "secretKeyRef": {
-                                                "name": "${DATABASE_SERVICE_NAME}",
-                                                "key": "database-name"
-                                            }
-                                        }
-                                    }
-                                ],
-                                "resources": {
-                                    "limits": {
-                                        "memory": "${API_MEMORY_LIMIT}",
-                                        "cpu":"${API_CPU_LIMIT}"
                                     }
                                 },
-                                "terminationMessagePath": "/dev/termination-log",
-                                "terminationMessagePolicy": "File",
-                                "imagePullPolicy": "Always"
-                            }
-                        ],
+                                {
+                                    "name": "PGPASSWORD",
+                                    "valueFrom": {
+                                        "secretKeyRef": {
+                                            "name": "${API_SERVICE_NAME}",
+                                            "key": "api-password"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "PGDATABASE",
+                                    "valueFrom": {
+                                        "secretKeyRef": {
+                                            "name": "${DATABASE_SERVICE_NAME}",
+                                            "key": "database-name"
+                                        }
+                                    }
+                                }
+                            ],
+                            "resources": {
+                                "limits": {
+                                    "memory": "${API_MEMORY_LIMIT}",
+                                    "cpu": "${API_CPU_LIMIT}"
+                                }
+                            },
+                            "terminationMessagePath": "/dev/termination-log",
+                            "terminationMessagePolicy": "File",
+                            "imagePullPolicy": "Always"
+                        }],
                         "restartPolicy": "Always",
                         "terminationGracePeriodSeconds": 30,
                         "dnsPolicy": "ClusterFirst",
@@ -301,15 +291,13 @@
                 }
             },
             "spec": {
-                "ports": [
-                    {
-                        "name": "postgresql",
-                        "protocol": "TCP",
-                        "port": 5432,
-                        "targetPort": 5432,
-                        "nodePort": 0
-                    }
-                ],
+                "ports": [{
+                    "name": "postgresql",
+                    "protocol": "TCP",
+                    "port": 5432,
+                    "targetPort": 5432,
+                    "nodePort": 0
+                }],
                 "selector": {
                     "name": "${DATABASE_SERVICE_NAME}"
                 },
@@ -318,23 +306,6 @@
             },
             "status": {
                 "loadBalancer": {}
-            }
-        },
-        {
-            "kind": "PersistentVolumeClaim",
-            "apiVersion": "v1",
-            "metadata": {
-                "name": "${DATABASE_SERVICE_NAME}"
-            },
-            "spec": {
-                "accessModes": [
-                    "ReadWriteOnce"
-                ],
-                "resources": {
-                    "requests": {
-                        "storage": "${VOLUME_CAPACITY}"
-                    }
-                }
             }
         },
         {
@@ -350,8 +321,7 @@
                 "strategy": {
                     "type": "Recreate"
                 },
-                "triggers": [
-                    {
+                "triggers": [{
                         "type": "ImageChange",
                         "imageChangeParams": {
                             "automatic": true,
@@ -381,106 +351,97 @@
                         }
                     },
                     "spec": {
-                        "containers": [
-                            {
-                                "name": "postgresql",
-                                "image": " ",
-                                "ports": [
-                                    {
-                                        "containerPort": 5432,
-                                        "protocol": "TCP"
-                                    }
-                                ],
-                                "readinessProbe": {
-                                    "timeoutSeconds": 1,
-                                    "initialDelaySeconds": 5,
-                                    "exec": {
-                                        "command": [
-                                            "/bin/sh",
-                                            "-i",
-                                            "-c",
-                                            "psql -h 127.0.0.1 -U $POSTGRESQL_USER -q -d $POSTGRESQL_DATABASE -c 'SELECT 1'"
-                                        ]
-                                    }
-                                },
-                                "livenessProbe": {
-                                    "exec": {
-                                        "command": [
-                                            "/bin/sh",
-                                            "-i",
-                                            "-c",
-                                            "pg_isready -h 127.0.0.1 -p 5432"
-                                        ]
-                                    },
-                                    "timeoutSeconds": 1,
-                                    "initialDelaySeconds": 30
-                                },
-                                "env": [
-                                    {
-                                        "name": "POSTGRESQL_USER",
-                                        "valueFrom": {
-                                            "secretKeyRef": {
-                                                "name": "${DATABASE_SERVICE_NAME}",
-                                                "key": "database-user"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "name": "POSTGRESQL_PASSWORD",
-                                        "valueFrom": {
-                                            "secretKeyRef": {
-                                                "name": "${DATABASE_SERVICE_NAME}",
-                                                "key": "database-password"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "name": "POSTGRESQL_ADMIN_PASSWORD",
-                                        "valueFrom": {
-                                            "secretKeyRef": {
-                                                "name": "${DATABASE_SERVICE_NAME}",
-                                                "key": "database-admin-password"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "name": "POSTGRESQL_DATABASE",
-                                        "valueFrom": {
-                                            "secretKeyRef": {
-                                                "name": "${DATABASE_SERVICE_NAME}",
-                                                "key": "database-name"
-                                            }
-                                        }
-                                    }
-                                ],
-                                "resources": {
-                                    "limits": {
-                                        "memory": "${DATABASE_MEMORY_LIMIT}"
-                                    }
-                                },
-                                "volumeMounts": [
-                                    {
-                                        "name": "${DATABASE_SERVICE_NAME}-data",
-                                        "mountPath": "/var/lib/pgsql/data"
-                                    }
-                                ],
-                                "terminationMessagePath": "/dev/termination-log",
-                                "imagePullPolicy": "IfNotPresent",
-                                "capabilities": {},
-                                "securityContext": {
-                                    "capabilities": {},
-                                    "privileged": false
+                        "containers": [{
+                            "name": "postgresql",
+                            "image": " ",
+                            "ports": [{
+                                "containerPort": 5432,
+                                "protocol": "TCP"
+                            }],
+                            "readinessProbe": {
+                                "timeoutSeconds": 1,
+                                "initialDelaySeconds": 5,
+                                "exec": {
+                                    "command": [
+                                        "/bin/sh",
+                                        "-i",
+                                        "-c",
+                                        "psql -h 127.0.0.1 -U $POSTGRESQL_USER -q -d $POSTGRESQL_DATABASE -c 'SELECT 1'"
+                                    ]
                                 }
-                            }
-                        ],
-                        "volumes": [
-                            {
+                            },
+                            "livenessProbe": {
+                                "exec": {
+                                    "command": [
+                                        "/bin/sh",
+                                        "-i",
+                                        "-c",
+                                        "pg_isready -h 127.0.0.1 -p 5432"
+                                    ]
+                                },
+                                "timeoutSeconds": 1,
+                                "initialDelaySeconds": 30
+                            },
+                            "env": [{
+                                    "name": "POSTGRESQL_USER",
+                                    "valueFrom": {
+                                        "secretKeyRef": {
+                                            "name": "${DATABASE_SERVICE_NAME}",
+                                            "key": "database-user"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "POSTGRESQL_PASSWORD",
+                                    "valueFrom": {
+                                        "secretKeyRef": {
+                                            "name": "${DATABASE_SERVICE_NAME}",
+                                            "key": "database-password"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "POSTGRESQL_ADMIN_PASSWORD",
+                                    "valueFrom": {
+                                        "secretKeyRef": {
+                                            "name": "${DATABASE_SERVICE_NAME}",
+                                            "key": "database-admin-password"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "POSTGRESQL_DATABASE",
+                                    "valueFrom": {
+                                        "secretKeyRef": {
+                                            "name": "${DATABASE_SERVICE_NAME}",
+                                            "key": "database-name"
+                                        }
+                                    }
+                                }
+                            ],
+                            "resources": {
+                                "limits": {
+                                    "memory": "${DATABASE_MEMORY_LIMIT}"
+                                }
+                            },
+                            "volumeMounts": [{
                                 "name": "${DATABASE_SERVICE_NAME}-data",
-                                "persistentVolumeClaim": {
-                                    "claimName": "${DATABASE_SERVICE_NAME}"
-                                }
+                                "mountPath": "/var/lib/pgsql/data"
+                            }],
+                            "terminationMessagePath": "/dev/termination-log",
+                            "imagePullPolicy": "IfNotPresent",
+                            "capabilities": {},
+                            "securityContext": {
+                                "capabilities": {},
+                                "privileged": false
                             }
-                        ],
+                        }],
+                        "volumes": [{
+                            "emptyDir": {
+                                "medium": ""
+                            },
+                            "name": "${DATABASE_SERVICE_NAME}-data"
+                        }],
                         "restartPolicy": "Always",
                         "dnsPolicy": "ClusterFirst"
                     }
@@ -489,27 +450,26 @@
             "status": {}
         }
     ],
-    "parameters": [
-        {
+    "parameters": [{
             "name": "API_DATA_CONTEXTS",
             "displayName": "API Data Contexts",
             "description": "The liquibase contexts to include for this environment.  (See [liquibase contexts](http://www.liquibase.org/documentation/contexts.html) for more info)",
             "required": false,
-            "value":"prod"
+            "value": "prod"
         },
         {
             "name": "API_IMAGE_NAMESPACE",
             "displayName": "Api ImageStream Project",
             "description": "The OpenShift Project where the Api ImageStream resides.",
             "required": true,
-            "value":"jag-shuber-tools"
+            "value": "jag-shuber-tools"
         },
         {
             "name": "API_IMAGE_STREAM",
             "displayName": "Api Image Stream",
             "description": "The name of the API image stream.",
             "required": true,
-            "value":"shuber-api"
+            "value": "shuber-api"
         },
         {
             "name": "API_SERVICE_NAME",

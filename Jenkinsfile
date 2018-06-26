@@ -4,12 +4,12 @@
   // Edit your app's name below
   def APP_NAME = 'api'
   def PATHFINDER_URL = "192.168.64.2.nip.io"
-  def PROJECT_PREFIX = "shuber"
+  def PROJECT_PREFIX = "jag-shuber"
   // Edit your environment TAG names below
   def TAG_NAMES = [
-  'jag-shuber-dev', 
-  'jag-shuber-test', 
-  'jag-shuber-prod'
+  'dev', 
+  'test', 
+  'prod'
   ]
   def APP_URLS = [
   "https://${APP_NAME}-${PROJECT_PREFIX}-${TAG_NAMES[0]}.${PATHFINDER_URL}",
@@ -112,12 +112,12 @@ node() {
   
 
   // Creating Emphemeral post-gress instance for testing
-  stage('Postgress Emphemeral Image'){
+  stage('Create Test environment'){
     node{
       try{
         echo "Creating Ephemeral Postgress instance for testing"
         POSTGRESS = sh (
-          script: """oc project jag-shuber-tools; oc process -f "${work_space}/openshift/posgress-emphemeral.json" | oc create -f - """)
+          script: """oc project jag-shuber-tools; oc process -f "${work_space}/openshift/test/frontend-deploy.json" | oc create -f -; oc process -f "${work_space}/openshift/test/api-postgress-ephemeral.json" | oc create -f - """)
           echo ">> POSTGRESS: ${POSTGRESS}" 
         
       } catch(error){
@@ -134,7 +134,7 @@ node() {
     try{
       echo "Run Test Case scripts here"
       POSTGRESS_DEL = sh (
-        script: """oc project jag-shuber-tools; oc process -f "${work_space}/openshift/posgress-emphemeral.json" | oc delete -f - """)
+        script: """oc project jag-shuber-tools; oc process -f "${work_space}/openshift/test/frontend-deploy.json" | oc delete -f -; oc process -f "${work_space}/openshift/test/api-postgress-ephemeral.json" | oc delete -f - """)
         echo ">> ${POSTGRESS_DEL}"
       echo "postgress instance deleted successfully"
     } catch(error){
@@ -264,15 +264,16 @@ node() {
       openshiftDeploy deploymentConfig: "${newTarget}", namespace: environment, waitTime: '900000'
       openshiftVerifyDeployment deploymentConfig: "${newTarget}", namespace: environment, waitTime: '900000'
       slackNotify(
-          "New Version in ${environment} 🚀",
-          "A new version of the ${APP_NAME} is now in ${environment}",
+          "Current production deployment mapped to ${currentTarget}"
+          "New Version in ${environment} is ${newTarget}🚀",
+          "A new version of the ${newTarget} is now in ${environment}",
           'To switch to new version',
           env.SLACK_HOOK,
           SLACK_MAIN_CHANNEL,
             [
               [
                 type: "button",            
-                text: "Deploy to Production?",
+                text: "switch route to new version on ${newTarget}?",
                 style: "primary",              
                 url: "${currentBuild.absoluteUrl}/input"
               ]
@@ -280,7 +281,7 @@ node() {
     }catch(error){
       slackNotify(
               "Couldn't deploy to ${environment} 🤕",
-              "The latest deployment of the ${APP_NAME} to ${environment} seems to have failed\n'${error.message}'",
+              "The latest deployment of the ${newTarget} to ${environment} seems to have failed\n'${error.message}'",
               'danger',
             env.SLACK_HOOK,
             SLACK_DEV_CHANNEL,
