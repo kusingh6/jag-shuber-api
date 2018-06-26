@@ -151,7 +151,7 @@ node() {
     def url = APP_URLS[0]
     node{
       try{
-        openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}", waitTime: '900000'
+        openshiftTag destStream: RUNTIME_BUILD, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}", waitTime: '900000'
         // verify deployment
         openshiftVerifyDeployment deploymentConfig: IMAGESTREAM_NAME, namespace: "${PROJECT_PREFIX}"+"-"+environment, waitTime: '900000'
         // Check for deployment config for api and postgress in dev environment
@@ -204,7 +204,7 @@ node() {
     timeout(time:3, unit: 'DAYS'){ input "Deploy to ${environment}?"}
     node{
     try{
-      openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}", waitTime: '900000'
+      openshiftTag destStream: RUNTIME_BUILD, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}", waitTime: '900000'
       // verify deployment
       openshiftVerifyDeployment deploymentConfig: IMAGESTREAM_NAME, namespace: "${PROJECT_PREFIX}"+"-"+environment, waitTime: '900000'
       slackNotify(
