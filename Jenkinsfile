@@ -152,7 +152,7 @@ node() {
       try{
         openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}", waitTime: '900000'
         // verify deployment
-        openshiftVerifyDeployment deploymentConfig: IMAGESTREAM_NAME, namespace: environment, waitTime: '900000'
+        openshiftVerifyDeployment deploymentConfig: IMAGESTREAM_NAME, namespace: "${PROJECT_PREFIX}"+"-"+environment, waitTime: '900000'
         // Check for deployment config for api and postgress in dev environment
         // PSTGRESS_IMG = sh ( """oc project ${environment}; oc process -f "${work_space}/openshift/api-postgres-deploy.json" | oc create -f - """)
         // echo ">> PSTGRESS_IMG: ${PSTGRESS_IMG}"
@@ -205,7 +205,7 @@ node() {
     try{
       openshiftTag destStream: IMAGESTREAM_NAME, verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}", waitTime: '900000'
       // verify deployment
-      openshiftVerifyDeployment deploymentConfig: IMAGESTREAM_NAME, namespace: environment, waitTime: '900000'
+      openshiftVerifyDeployment deploymentConfig: IMAGESTREAM_NAME, namespace: "${PROJECT_PREFIX}"+"-"+environment, waitTime: '900000'
       slackNotify(
         "New Version in ${environment} 🚀",
         "A new version of the ${APP_NAME} is now in ${environment}",
@@ -263,8 +263,8 @@ node() {
       openshiftTag destStream: "${newTarget}", verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}", waitTime: '900000'
 
       // Deploy Image to the environment
-      openshiftDeploy deploymentConfig: "${newTarget}", namespace: environment, waitTime: '900000'
-      openshiftVerifyDeployment deploymentConfig: "${newTarget}", namespace: environment, waitTime: '900000'
+      openshiftDeploy deploymentConfig: "${newTarget}", namespace: "${PROJECT_PREFIX}"+"-"+environment, waitTime: '900000'
+      openshiftVerifyDeployment deploymentConfig: "${newTarget}", namespace: "${PROJECT_PREFIX}"+"-"+environment, waitTime: '900000'
       slackNotify(
           "Current production deployment mapped to ${currentTarget}",
           "New Version in ${environment} is ${newTarget}🚀",
