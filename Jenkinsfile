@@ -250,8 +250,8 @@ node() {
   stage('Tag Image to ' + TAG_NAMES[2]){
     def environment = TAG_NAMES[2]
     def url = APP_URLS[2]
-    // def newTarget = getNewTarget()
-    // def currentTarget = getCurrentTarget()
+    def newTarget = getNewTarget()
+    def currentTarget = getCurrentTarget()
     timeout(time:3, unit: 'DAYS'){ input "Deploy to ${environment}?"}
     node{
       
