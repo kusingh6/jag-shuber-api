@@ -19,7 +19,7 @@
 
   // You shouldn't have to edit these if you're following the conventions
   def ARTIFACT_BUILD = APP_NAME + '-builder-build'
-  def RUNTIME_BUILD = PROJECT_PREFIX + '-' + APP_NAME
+  def RUNTIME_BUILD = 'shuber-' + APP_NAME
   def IMAGESTREAM_NAME = APP_NAME
   def SLACK_DEV_CHANNEL="kulpreet_test"
   def SLACK_MAIN_CHANNEL="kulpreet_test"
@@ -69,8 +69,8 @@ node() {
           // def apibuildtemplate
           if (!templateExists_RUN) {
             
-            APIBUILD_IMG = sh ( """oc process -f "${work_space}/openshift/templates/api/api-build.json" | oc create -f - """)
-            echo ">> APIBUILD_IMG: ${APIBUILD_IMG}"
+            APIBUILD_RUNTIME = sh ( """oc process -f "${work_space}/openshift/templates/api/api-build.json" | oc create -f - """)
+            echo ">> APIBUILD_RUNTIME: ${APIBUILD_IMG}"
           } else {
             echo "${RUNTIME_BUILD} Template exists"
             }
