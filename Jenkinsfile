@@ -26,7 +26,7 @@
   // def scmVars = checkout scm
   def work_space = "/var/lib/jenkins/jobs/jag-shuber-tools/jobs/jag-shuber-tools-shuber-api-pipeline/workspace@script"
   //Trigger remote job
-  def handle = build job: 'Jag-shuber-prod-deploy'
+  // def handle = build job: 'Jag-shuber-prod-deploy'
 
 node() {
   def hasRepoChanged = false;
@@ -277,7 +277,7 @@ node() {
                 type: "button",            
                 text: "switch to new version on ${newTarget}?",
                 style: "primary",              
-                url: "${handle}/input"
+                url: "build job: 'Jag-shuber-prod-deploy'/input"
               ]
             ])
     }catch(error){
