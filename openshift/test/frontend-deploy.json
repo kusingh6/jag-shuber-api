@@ -306,7 +306,7 @@
             "description": "The TAG name for this environment, e.g., dev, test, prod",
             "displayName": "Env TAG name",
             "name": "TAG_NAME",
-            "value": "latest"
+            "value": "dev"
         },
         {
             "description": "For very simple HTTP Basic authentication, use %HTTP_BASIC% in your nginx config and provide the value here that you want in nginx config, e.g., auth_basic 'restricted';",
