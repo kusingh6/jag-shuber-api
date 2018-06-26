@@ -25,7 +25,8 @@
   def SLACK_MAIN_CHANNEL="kulpreet_test"
   // def scmVars = checkout scm
   def work_space = "/var/lib/jenkins/jobs/jag-shuber-tools/jobs/jag-shuber-tools-shuber-api-pipeline/workspace@script"
-  //def workspace = pwd()
+  //Trigger remote job
+  def handle = build job: 'Jag-shuber-prod-deploy'
 
 node() {
   def hasRepoChanged = false;
@@ -246,7 +247,7 @@ node() {
       }
 
   // Deploying to production
-  stage('Deploy ' + TAG_NAMES[2]){
+  stage('Tag Image to ' + TAG_NAMES[2]){
     def environment = TAG_NAMES[2]
     def url = APP_URLS[2]
     // def newTarget = getNewTarget()
@@ -262,28 +263,27 @@ node() {
       // Tag the new build as "prod"
       openshiftTag destStream: "${newTarget}", verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}", waitTime: '900000'
 
-      // Deploy Image to the environment
-      openshiftDeploy deploymentConfig: "${newTarget}", namespace: "${PROJECT_PREFIX}"+"-"+environment, waitTime: '900000'
-      openshiftVerifyDeployment deploymentConfig: "${newTarget}", namespace: "${PROJECT_PREFIX}"+"-"+environment, waitTime: '900000'
+      // // Deploy Image to the environment
+      // openshiftDeploy deploymentConfig: "${newTarget}", namespace: "${PROJECT_PREFIX}"+"-"+environment, waitTime: '900000'
+      // openshiftVerifyDeployment deploymentConfig: "${newTarget}", namespace: "${PROJECT_PREFIX}"+"-"+environment, waitTime: '900000'
       slackNotify(
-          "Current production deployment mapped to ${currentTarget}",
-          "New Version in ${environment} is ${newTarget}🚀",
-          "A new version of the ${newTarget} is now in ${environment}",
+          "Current production Image tagged to ${environment}",
+          "To Deploy ${newTarget} stack and with prod tagged image"
           'To switch to new version',
           env.SLACK_HOOK,
           SLACK_MAIN_CHANNEL,
             [
               [
                 type: "button",            
-                text: "switch route to new version on ${newTarget}?",
+                text: "switch to new version on ${newTarget}?",
                 style: "primary",              
-                url: "${currentBuild.absoluteUrl}/input"
+                url: "${handle}/input"
               ]
             ])
     }catch(error){
       slackNotify(
-              "Couldn't deploy to ${environment} 🤕",
-              "The latest deployment of the ${newTarget} to ${environment} seems to have failed\n'${error.message}'",
+              "Couldn't tag image to ${environment} 🤕",
+              "The latest tagging of the image to ${environment} seems to have failed\n'${error.message}'",
               'danger',
             env.SLACK_HOOK,
             SLACK_DEV_CHANNEL,
@@ -300,25 +300,25 @@ node() {
   }
   }
 
-  // Once approved (input step) switch production over to the new version.
-  stage('Switch over to new Version') {
-    def newTarget = getNewTarget()
-    def currentTarget = getCurrentTarget()
-    // Wait for administrator confirmation
-    timeout(time:3, unit: 'DAYS'){ input "Switch Production from ${currentTarget} to ${newTarget} ?"}
-    node{
-      try{
+  // // Once approved (input step) switch production over to the new version.
+  // stage('Switch over to new Version') {
+  //   def newTarget = getNewTarget()
+  //   def currentTarget = getCurrentTarget()
+  //   // Wait for administrator confirmation
+  //   timeout(time:3, unit: 'DAYS'){ input "Switch Production from ${currentTarget} to ${newTarget} ?"}
+  //   node{
+  //     try{
         
-        // Switch blue/green
-        ROUT_PATCH = sh(
-        script: """oc project jag-shuber-prod; oc patch -n jag-shuber-prod route/api --patch '{\"spec\":{\"to\":{\"name\":\"${newTarget}\"}}}'; oc get route api -o template --template='{{ .spec.to.name }}'""")
-        echo ">> ROUT_PATCH: ${ROUT_PATCH}"
-      }catch(error){
-        echo "Failed to switch route"
-        throw error
-      }
-  }
-  }
+  //       // Switch blue/green
+  //       ROUT_PATCH = sh(
+  //       script: """oc project jag-shuber-prod; oc patch -n jag-shuber-prod route/api --patch '{\"spec\":{\"to\":{\"name\":\"${newTarget}\"}}}'; oc get route api -o template --template='{{ .spec.to.name }}'""")
+  //       echo ">> ROUT_PATCH: ${ROUT_PATCH}"
+  //     }catch(error){
+  //       echo "Failed to switch route"
+  //       throw error
+  //     }
+  // }
+  // }
 
   // }else{
   //   stage('No Changes to Build 👍'){

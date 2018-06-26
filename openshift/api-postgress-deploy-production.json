@@ -145,7 +145,7 @@
                             ],
                             "from": {
                                 "kind": "ImageStreamTag",
-                                "name": "${API_IMAGE_STREAM}:latest",
+                                "name": "${API_IMAGE_STREAM}:test",
                                 "namespace": "${API_IMAGE_NAMESPACE}"
                             }
                         }
@@ -390,7 +390,7 @@
                             ],
                             "from": {
                                 "kind": "ImageStreamTag",
-                                "name": "${API_IMAGE_STREAM}:latest",
+                                "name": "${API_IMAGE_STREAM}:test",
                                 "namespace": "${API_IMAGE_NAMESPACE}"
                             }
                         }
