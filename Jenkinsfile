@@ -249,8 +249,8 @@ node() {
   stage('Deploy ' + TAG_NAMES[2]){
     def environment = TAG_NAMES[2]
     def url = APP_URLS[2]
-    def newTarget = getNewTarget()
-    def currentTarget = getCurrentTarget()
+    // def newTarget = getNewTarget()
+    // def currentTarget = getCurrentTarget()
     timeout(time:3, unit: 'DAYS'){ input "Deploy to ${environment}?"}
     node{
       
@@ -266,7 +266,7 @@ node() {
       openshiftDeploy deploymentConfig: "${newTarget}", namespace: environment, waitTime: '900000'
       openshiftVerifyDeployment deploymentConfig: "${newTarget}", namespace: environment, waitTime: '900000'
       slackNotify(
-          "Current production deployment mapped to ${currentTarget}"
+          "Current production deployment mapped to ${currentTarget}",
           "New Version in ${environment} is ${newTarget}🚀",
           "A new version of the ${newTarget} is now in ${environment}",
           'To switch to new version',
