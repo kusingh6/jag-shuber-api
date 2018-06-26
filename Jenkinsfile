@@ -258,7 +258,7 @@ node() {
       try {
       // Check for current route target
       ROUT_CHK = sh (
-      script: """oc project jag-shuber-prod; oc get route api -o template --template='{{ .spec.to.name }}' > ${workspace}/route-target; cat ${workspace}/route-target""")
+      script: """oc project jag-shuber-prod; oc get route api -o template --template='{{ .spec.to.name }}' > ${work_space}/route-target; cat ${work_space}/route-target""")
       // echo ">> ROUT_CHK: ${ROUT_CHK}"
       // Tag the new build as "prod"
       openshiftTag destStream: "${newTarget}", verbose: 'true', destTag: environment, srcStream: RUNTIME_BUILD, srcTag: "${IMAGE_HASH}", waitTime: '900000'
@@ -326,7 +326,7 @@ node() {
 }
 // // Functions to check currentTarget (api-blue)deployment and mark to for deployment to newTarget(api-green) & vice versa
   def getCurrentTarget() {
-  def currentTarget = readFile("${workspace}/route-target")
+  def currentTarget = readFile("${work_space}/route-target")
   return currentTarget
   }
 
